@@ -1,0 +1,6 @@
+{
+  "name": "Expense Tracker",
+  "description": "A beautiful and interactive expense and income tracker with clean visual charts and localStorage persistence.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
