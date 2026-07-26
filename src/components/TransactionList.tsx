@@ -1,20 +1,18 @@
 import React, { useState, useMemo } from 'react';
 import { Transaction, Category } from '../types';
-import { Search, Trash2, Calendar, FileText, Filter, RefreshCw } from 'lucide-react';
 import { LucideIcon } from './LucideIcon';
+import { Search, Filter, Trash2, Calendar, FileText, Banknote, CreditCard, SendToBack } from 'lucide-react';
 
 interface TransactionListProps {
   transactions: Transaction[];
   categories: Category[];
   onDeleteTransaction: (id: string) => void;
-  onClearAll: () => void;
 }
 
 export const TransactionList: React.FC<TransactionListProps> = ({
   transactions,
   categories,
   onDeleteTransaction,
-  onClearAll,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
@@ -26,8 +24,32 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     return new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(val);
   };
 
+  const getMonthName = (dateString: string) => {
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return 'Ismeretlen';
+    return new Intl.DateTimeFormat('hu-HU', { year: 'numeric', month: 'long' }).format(d);
+  };
+
+  const getPaymentIcon = (method?: 'cash' | 'card' | 'transfer') => {
+    switch (method) {
+      case 'cash': return <Banknote size={14} className="text-emerald-400" />;
+      case 'card': return <CreditCard size={14} className="text-blue-400" />;
+      case 'transfer': return <SendToBack size={14} className="text-purple-400" />;
+      default: return null;
+    }
+  };
+
+  const getPaymentName = (method?: 'cash' | 'card' | 'transfer') => {
+    switch (method) {
+      case 'cash': return 'Készpénz';
+      case 'card': return 'Kártya';
+      case 'transfer': return 'Utalás';
+      default: return '';
+    }
+  };
+
   // Filter and sort transactions
-  const processedTransactions = useMemo(() => {
+  const groupedTransactions = useMemo(() => {
     let result = [...transactions];
 
     // Search term filter
@@ -59,7 +81,17 @@ export const TransactionList: React.FC<TransactionListProps> = ({
       return 0;
     });
 
-    return result;
+    // Grouping by month
+    const groups: Record<string, Transaction[]> = {};
+    result.forEach(tx => {
+      const month = getMonthName(tx.date);
+      if (!groups[month]) {
+        groups[month] = [];
+      }
+      groups[month].push(tx);
+    });
+
+    return groups;
   }, [transactions, searchTerm, filterType, filterCategory, sortBy]);
 
   return (
@@ -70,20 +102,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
           <h3 className="font-semibold text-slate-100 text-lg">Tranzakciók Előzménye</h3>
           <p className="text-xs text-slate-400">Rendszerezett pénzmozgások listája</p>
         </div>
-
-        {/* Action button to clear */}
-        {transactions.length > 0 && (
-          <button
-            onClick={() => {
-              if (window.confirm('Biztosan törölni szeretné az ÖSSZES tranzakciót?')) {
-                onClearAll();
-              }
-            }}
-            className="self-start md:self-auto text-xs text-rose-400 hover:text-rose-300 font-bold transition-colors flex items-center gap-1 bg-rose-500/10 hover:bg-rose-500/20 px-3 py-1.5 rounded-lg"
-          >
-            Összes törlése
-          </button>
-        )}
+        {/* Deleted "Összes törlése" button */}
       </div>
 
       {/* Filter Control Bar */}
@@ -148,87 +167,105 @@ export const TransactionList: React.FC<TransactionListProps> = ({
 
       {/* Transactions Container */}
       <div className="overflow-x-auto">
-        {processedTransactions.length > 0 ? (
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-slate-800 text-[11px] text-slate-400 uppercase font-bold tracking-wider">
-                <th className="pb-3 pl-2">Tranzakció / Kategória</th>
-                <th className="pb-3 hidden md:table-cell">Dátum</th>
-                <th className="pb-3 hidden sm:table-cell">Jegyzet</th>
-                <th className="pb-3 text-right">Összeg</th>
-                <th className="pb-3 pr-2 text-right">Művelet</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60">
-              {processedTransactions.map((tx) => {
-                const catObj = categories.find((c) => c.name === tx.category) || {
-                  name: tx.category,
-                  icon: 'DollarSign',
-                  color: '#6b7280',
-                };
-                return (
-                  <tr key={tx.id} className="group hover:bg-slate-800/20 transition-colors">
-                    {/* Item and category */}
-                    <td className="py-3.5 pl-2">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-slate-950 border border-slate-800"
-                          style={{ color: catObj.color }}
-                        >
-                          <LucideIcon name={catObj.icon} size={16} />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-bold text-slate-100 text-sm truncate">{tx.description}</p>
-                          <span className="text-[10px] text-slate-400 font-medium bg-slate-950 border border-slate-800/80 px-2 py-0.5 rounded-full mt-1 inline-block">
-                            {tx.category}
-                          </span>
-                        </div>
-                      </div>
-                    </td>
+        {Object.keys(groupedTransactions).length > 0 ? (
+          <div className="space-y-6">
+            {Object.entries(groupedTransactions).map(([month, monthTransactions]) => (
+              <div key={month}>
+                <h4 className="text-sm font-bold text-emerald-500 mb-3 border-b border-slate-800/60 pb-2 capitalize">
+                  {month}
+                </h4>
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-800 text-[11px] text-slate-400 uppercase font-bold tracking-wider">
+                      <th className="pb-3 pl-2">Tranzakció / Kategória</th>
+                      <th className="pb-3 hidden md:table-cell">Dátum</th>
+                      <th className="pb-3 hidden sm:table-cell">Fizetés módja</th>
+                      <th className="pb-3 text-right">Összeg</th>
+                      <th className="pb-3 pr-2 text-right">Művelet</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60">
+                    {(monthTransactions as Transaction[]).map((tx) => {
+                      const catObj = categories.find((c) => c.name === tx.category) || {
+                        name: tx.category,
+                        icon: 'DollarSign',
+                        color: '#6b7280',
+                      };
+                      return (
+                        <tr key={tx.id} className="group hover:bg-slate-800/20 transition-colors">
+                          {/* Item and category */}
+                          <td className="py-3.5 pl-2">
+                            <div className="flex items-center gap-3">
+                              <div
+                                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-slate-950 border border-slate-800"
+                                style={{ color: catObj.color }}
+                              >
+                                <LucideIcon name={catObj.icon} size={16} />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-bold text-slate-100 text-sm truncate">{tx.description}</p>
+                                <span className="text-[10px] text-slate-400 font-medium bg-slate-950 border border-slate-800/80 px-2 py-0.5 rounded-full mt-1 inline-block">
+                                  {tx.category}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
 
-                    {/* Date */}
-                    <td className="py-3.5 hidden md:table-cell text-xs font-mono text-slate-400">
-                      <div className="flex items-center gap-1.5">
-                        <Calendar size={12} className="text-slate-500" />
-                        {tx.date}
-                      </div>
-                    </td>
+                          {/* Date */}
+                          <td className="py-3.5 hidden md:table-cell text-xs font-mono text-slate-400">
+                            <div className="flex items-center gap-1.5">
+                              <Calendar size={12} className="text-slate-500" />
+                              {tx.date}
+                            </div>
+                          </td>
 
-                    {/* Notes */}
-                    <td className="py-3.5 hidden sm:table-cell text-xs text-slate-400 max-w-xs truncate">
-                      {tx.notes ? (
-                        <div className="flex items-center gap-1.5">
-                          <FileText size={12} className="text-slate-500" />
-                          <span className="truncate">{tx.notes}</span>
-                        </div>
-                      ) : (
-                        <span className="text-slate-600 font-mono">-</span>
-                      )}
-                    </td>
+                          {/* Payment Method / Notes */}
+                          <td className="py-3.5 hidden sm:table-cell text-xs text-slate-400 max-w-xs">
+                            <div className="flex flex-col gap-1">
+                                {tx.type === 'expense' && tx.paymentMethod && (
+                                  <div className="flex items-center gap-1.5" title={getPaymentName(tx.paymentMethod)}>
+                                    {getPaymentIcon(tx.paymentMethod)}
+                                    <span className="truncate">{getPaymentName(tx.paymentMethod)}</span>
+                                  </div>
+                                )}
+                                {tx.notes && (
+                                  <div className="flex items-center gap-1.5">
+                                    <FileText size={12} className="text-slate-500" />
+                                    <span className="truncate">{tx.notes}</span>
+                                  </div>
+                                )}
+                                {!tx.paymentMethod && !tx.notes && (
+                                    <span className="text-slate-600 font-mono">-</span>
+                                )}
+                            </div>
+                          </td>
 
-                    {/* Amount */}
-                    <td className="py-3.5 text-right font-mono text-sm font-bold">
-                      <span className={tx.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}>
-                        {tx.type === 'income' ? '+' : '-'}
-                        {formatCurrency(tx.amount)}
-                      </span>
-                    </td>
+                          {/* Amount */}
+                          <td className="py-3.5 text-right font-mono text-sm font-bold">
+                            <span className={tx.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}>
+                              {tx.type === 'income' ? '+' : '-'}
+                              {formatCurrency(tx.amount)}
+                            </span>
+                          </td>
 
-                    {/* Delete action */}
-                    <td className="py-3.5 pr-2 text-right">
-                      <button
-                        onClick={() => onDeleteTransaction(tx.id)}
-                        className="text-slate-500 hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
-                        title="Törlés"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                          {/* Delete action */}
+                          <td className="py-3.5 pr-2 text-right">
+                            <button
+                              onClick={() => onDeleteTransaction(tx.id)}
+                              className="text-slate-500 hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                              title="Törlés"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="text-center py-12 flex flex-col items-center justify-center">
             <Filter size={32} className="text-slate-700 mb-2" />
