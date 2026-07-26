@@ -6,6 +6,7 @@ export interface Transaction {
   category: string;
   date: string; // ISO date string (YYYY-MM-DD)
   notes?: string;
+  paymentMethod?: 'cash' | 'card' | 'transfer';
 }
 
 export interface Category {

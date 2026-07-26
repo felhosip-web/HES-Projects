@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Transaction, Category } from '../types';
-import { PlusCircle, Check, X } from 'lucide-react';
+import { PlusCircle, Check, X, Banknote, CreditCard, SendToBack } from 'lucide-react';
 import { LucideIcon } from './LucideIcon';
 
 interface TransactionFormProps {
@@ -20,10 +20,11 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
   const [category, setCategory] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'transfer' | undefined>();
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Filter categories based on transaction type
-  // Salay and Investments are income. Others can be both. Rest are expenses.
+  // Salary and Investments are income. Others can be both. Rest are expenses.
   const filteredCategories = categories.filter((c) => {
     if (type === 'income') {
       return c.name === 'Salary' || c.name === 'Investments' || c.name === 'Others';
@@ -57,6 +58,9 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
     if (!date) {
       newErrors.date = 'Válassz dátumot';
     }
+    if (type === 'expense' && !paymentMethod) {
+      newErrors.paymentMethod = 'Válassz fizetési módot';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -72,12 +76,14 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
       category,
       date,
       notes: notes.trim() || undefined,
+      paymentMethod: type === 'expense' ? paymentMethod : undefined,
     });
 
     // Reset form
     setDescription('');
     setAmount('');
     setNotes('');
+    setPaymentMethod(undefined);
     if (onClose) onClose();
   };
 
@@ -170,6 +176,52 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
           {errors.date && <p className="text-rose-500 text-xs mt-1 font-medium">{errors.date}</p>}
         </div>
       </div>
+
+      {/* Payment Method selector (only for expenses) */}
+      {type === 'expense' && (
+        <div>
+          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">Fizetés Módja</label>
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              type="button"
+              onClick={() => setPaymentMethod('cash')}
+              className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all ${
+                paymentMethod === 'cash'
+                  ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400 font-semibold'
+                  : 'border-slate-800 hover:border-slate-700 text-slate-400'
+              }`}
+            >
+              <Banknote size={20} className="mb-1" />
+              <span className="text-[10px]">Készpénz</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPaymentMethod('card')}
+              className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all ${
+                paymentMethod === 'card'
+                  ? 'border-blue-500 bg-blue-500/10 text-blue-400 font-semibold'
+                  : 'border-slate-800 hover:border-slate-700 text-slate-400'
+              }`}
+            >
+              <CreditCard size={20} className="mb-1" />
+              <span className="text-[10px]">Kártya</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPaymentMethod('transfer')}
+              className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all ${
+                paymentMethod === 'transfer'
+                  ? 'border-purple-500 bg-purple-500/10 text-purple-400 font-semibold'
+                  : 'border-slate-800 hover:border-slate-700 text-slate-400'
+              }`}
+            >
+              <SendToBack size={20} className="mb-1" />
+              <span className="text-[10px]">Utalás</span>
+            </button>
+          </div>
+          {errors.paymentMethod && <p className="text-rose-500 text-xs mt-1 font-medium">{errors.paymentMethod}</p>}
+        </div>
+      )}
 
       {/* Category selector */}
       <div>

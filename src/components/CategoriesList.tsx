@@ -1,14 +1,18 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Transaction, Category } from '../types';
 import { LucideIcon } from './LucideIcon';
-import { Sparkles, AlertTriangle } from 'lucide-react';
+import { Sparkles, AlertTriangle, Edit2, Check, X, PlusCircle, Trash2 } from 'lucide-react';
 
 interface CategoriesListProps {
   transactions: Transaction[];
   categories: Category[];
+  onUpdateCategories: (categories: Category[]) => void;
 }
 
-export const CategoriesList: React.FC<CategoriesListProps> = ({ transactions, categories }) => {
+export const CategoriesList: React.FC<CategoriesListProps> = ({ transactions, categories, onUpdateCategories }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingCategories, setEditingCategories] = useState<Category[]>([...categories]);
+
   // Format currency helper
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(val);
@@ -38,16 +42,142 @@ export const CategoriesList: React.FC<CategoriesListProps> = ({ transactions, ca
       .sort((a, b) => b.percent - a.percent); // Sort by highest usage first
   }, [transactions, categories]);
 
+  const handleEditChange = (index: number, field: keyof Category, value: string | number | undefined) => {
+    const newCats = [...editingCategories];
+    newCats[index] = { ...newCats[index], [field]: value };
+    setEditingCategories(newCats);
+  };
+
+  const handleAddCategory = () => {
+    setEditingCategories([
+      ...editingCategories,
+      { name: 'Új kategória', icon: 'Circle', color: '#6b7280', budget: 0 }
+    ]);
+  };
+
+  const handleRemoveCategory = (index: number) => {
+    const newCats = [...editingCategories];
+    newCats.splice(index, 1);
+    setEditingCategories(newCats);
+  };
+
+  const handleSave = () => {
+    onUpdateCategories(editingCategories);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditingCategories([...categories]);
+    setIsEditing(false);
+  };
+
+  if (isEditing) {
+    return (
+      <div id="category_budgets_card" className="bg-slate-900 border border-emerald-500/50 rounded-2xl p-6 shadow-sm">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-xl">
+              <Edit2 size={20} />
+            </div>
+            <div>
+              <h3 className="font-semibold text-slate-100 text-lg">Kategóriák szerkesztése</h3>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+          {editingCategories.map((cat, idx) => (
+            <div key={idx} className="p-3 bg-slate-950 border border-slate-800 rounded-xl flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={cat.name}
+                  onChange={(e) => handleEditChange(idx, 'name', e.target.value)}
+                  className="flex-1 bg-slate-900 text-slate-100 border border-slate-700 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-emerald-500"
+                  placeholder="Név"
+                />
+                <button
+                  onClick={() => handleRemoveCategory(idx)}
+                  className="text-slate-500 hover:text-rose-400 p-1"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={cat.icon}
+                  onChange={(e) => handleEditChange(idx, 'icon', e.target.value)}
+                  className="w-1/2 bg-slate-900 text-slate-100 border border-slate-700 rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-emerald-500"
+                  placeholder="Ikon (Lucide)"
+                />
+                <input
+                  type="color"
+                  value={cat.color}
+                  onChange={(e) => handleEditChange(idx, 'color', e.target.value)}
+                  className="w-8 h-8 rounded cursor-pointer bg-slate-900 border-none p-0"
+                />
+                <input
+                  type="number"
+                  value={cat.budget || ''}
+                  onChange={(e) => handleEditChange(idx, 'budget', parseFloat(e.target.value) || 0)}
+                  className="flex-1 bg-slate-900 text-slate-100 border border-slate-700 rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-emerald-500"
+                  placeholder="Keret (opc.)"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-4 flex gap-2">
+          <button
+            onClick={handleAddCategory}
+            className="flex-1 py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5"
+          >
+            <PlusCircle size={14} /> Új
+          </button>
+        </div>
+
+        <div className="mt-4 flex gap-2">
+          <button
+            onClick={handleCancel}
+            className="flex-1 py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5"
+          >
+            <X size={14} /> Mégse
+          </button>
+          <button
+            onClick={handleSave}
+            className="flex-1 py-2.5 px-4 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5"
+          >
+            <Check size={14} /> Mentés
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div id="category_budgets_card" className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-amber-500/10 text-amber-400 rounded-xl">
-          <AlertTriangle size={20} />
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-amber-500/10 text-amber-400 rounded-xl">
+            <AlertTriangle size={20} />
+          </div>
+          <div>
+            <h3 className="font-semibold text-slate-100 text-lg">Költségkeretek & Limitek</h3>
+            <p className="text-xs text-slate-400">Aktuális havi keretek kihasználtsága</p>
+          </div>
         </div>
-        <div>
-          <h3 className="font-semibold text-slate-100 text-lg">Költségkeretek & Limitek</h3>
-          <p className="text-xs text-slate-400">Aktuális havi keretek kihasználtsága</p>
-        </div>
+        <button
+          onClick={() => {
+            setEditingCategories([...categories]);
+            setIsEditing(true);
+          }}
+          className="text-slate-400 hover:text-emerald-400 p-1.5 rounded-lg hover:bg-emerald-500/10 transition-colors"
+          title="Szerkesztés"
+        >
+          <Edit2 size={16} />
+        </button>
       </div>
 
       {categoryBudgets.length > 0 ? (

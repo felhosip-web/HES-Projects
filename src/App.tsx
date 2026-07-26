@@ -5,35 +5,40 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Transaction, Category } from './types';
-import { DEFAULT_CATEGORIES, DEFAULT_TRANSACTIONS } from './data';
 import { DashboardStats } from './components/DashboardStats';
 import { Charts } from './components/Charts';
 import { TransactionForm } from './components/TransactionForm';
 import { TransactionList } from './components/TransactionList';
 import { CategoriesList } from './components/CategoriesList';
-import { Wallet, Sparkles, TrendingUp, Github, ArrowUpRight } from 'lucide-react';
-import { motion } from 'motion/react';
+import { Wallet, Sparkles, Github, ArrowUpRight } from 'lucide-react';
+import { getTransactions, saveTransaction, deleteTransaction, clearTransactions, getCategories, saveCategories } from './db';
 
 export default function App() {
-  // Load initial data from localStorage or use defaults
-  const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    const saved = localStorage.getItem('hes_tracker_transactions');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Error parsing saved transactions', e);
-      }
-    }
-    return DEFAULT_TRANSACTIONS;
-  });
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [categories] = useState<Category[]>(DEFAULT_CATEGORIES);
-
-  // Sync to localStorage
+  // Load initial data from IndexedDB
   useEffect(() => {
-    localStorage.setItem('hes_tracker_transactions', JSON.stringify(transactions));
-  }, [transactions]);
+    const loadData = async () => {
+      try {
+        const [loadedTxs, loadedCats] = await Promise.all([
+          getTransactions(),
+          getCategories()
+        ]);
+        setTransactions(loadedTxs);
+        setCategories(loadedCats);
+      } catch (e) {
+        console.error("Error loading data from IndexedDB:", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+
+  // Sync to IndexedDB handled per-action now instead of purely through effect,
+  // except maybe initial load defaults, but we handle DB operations cleanly in action handlers.
 
   // Statistics calculations
   const totalIncome = useMemo(() => {
@@ -53,23 +58,46 @@ export default function App() {
   }, [totalIncome, totalExpenses]);
 
   // Handle adding new transaction
-  const handleAddTransaction = (newTx: Omit<Transaction, 'id'>) => {
+  const handleAddTransaction = async (newTx: Omit<Transaction, 'id'>) => {
     const transaction: Transaction = {
       ...newTx,
       id: crypto.randomUUID(),
     };
-    setTransactions((prev) => [transaction, ...prev]);
+    try {
+      await saveTransaction(transaction);
+      setTransactions((prev) => [transaction, ...prev]);
+    } catch (e) {
+      console.error("Failed to save transaction:", e);
+    }
   };
 
   // Handle deleting a transaction
-  const handleDeleteTransaction = (id: string) => {
-    setTransactions((prev) => prev.filter((t) => t.id !== id));
+  const handleDeleteTransaction = async (id: string) => {
+    try {
+      await deleteTransaction(id);
+      setTransactions((prev) => prev.filter((t) => t.id !== id));
+    } catch (e) {
+      console.error("Failed to delete transaction:", e);
+    }
   };
 
-  // Clear all transactions
-  const handleClearAll = () => {
-    setTransactions([]);
+  // Update categories (used by CategoriesList in edit mode)
+  const handleUpdateCategories = async (newCategories: Category[]) => {
+    try {
+      await saveCategories(newCategories);
+      setCategories(newCategories);
+    } catch (e) {
+      console.error("Failed to save categories:", e);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-emerald-400">
+        <Sparkles className="animate-pulse" size={48} />
+      </div>
+    );
+  }
 
   return (
     <div id="app_root" className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-emerald-500/30 selection:text-emerald-400">
@@ -135,7 +163,6 @@ export default function App() {
               transactions={transactions}
               categories={categories}
               onDeleteTransaction={handleDeleteTransaction}
-              onClearAll={handleClearAll}
             />
           </div>
 
@@ -157,7 +184,11 @@ export default function App() {
             </div>
 
             {/* Categories and Budgets Limits */}
-            <CategoriesList transactions={transactions} categories={categories} />
+            <CategoriesList
+              transactions={transactions}
+              categories={categories}
+              onUpdateCategories={handleUpdateCategories}
+            />
           </div>
 
         </div>
