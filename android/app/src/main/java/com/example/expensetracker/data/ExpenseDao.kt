@@ -20,4 +20,10 @@ interface ExpenseDao {
 
     @Query("DELETE FROM expenses")
     suspend fun clearAll()
+
+    @Query("UPDATE expenses SET category = :newName WHERE category = :oldName")
+    suspend fun updateCategoryName(oldName: String, newName: String)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(expenses: List<ExpenseEntity>)
 }
