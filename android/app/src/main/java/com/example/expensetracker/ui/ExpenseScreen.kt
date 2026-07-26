@@ -146,7 +146,7 @@ fun ExpenseScreen(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
                         placeholder = { Text("Keresés...", fontSize = 12.sp) },
-                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, size = 16.dp) },
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(16.dp)) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color(0xFF10B981),
@@ -305,7 +305,7 @@ fun StatsSection(balance: Double, income: Double, expense: Double, savingsRate: 
                 }
                 Spacer(modifier = Modifier.height(6.dp))
                 LinearProgressIndicator(
-                    progress = { (savingsRate / 100f).toFloat().coerceIn(0f, 1f) },
+                    progress = (savingsRate / 100f).toFloat().coerceIn(0f, 1f),
                     modifier = Modifier.fillMaxWidth(),
                     color = Color(0xFF06B6D4),
                     trackColor = Color(0xFF020617)
@@ -440,7 +440,7 @@ fun BudgetLimitsSection(expenses: List<ExpenseEntity>) {
                     }
 
                     LinearProgressIndicator(
-                        progress = { progress.coerceIn(0f, 1f) },
+                        progress = progress.coerceIn(0f, 1f),
                         modifier = Modifier.fillMaxWidth(),
                         color = if (isOver) Color(0xFFF43F5E) else if (progress > 0.85) Color(0xFFEAB308) else Color(0xFF10B981),
                         trackColor = Color(0xFF020617)

@@ -6,3 +6,13 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Android build artifacts and caches
+.gradle/
+android/.gradle/
+android/app/build/
+android/local.properties
+
+# Gradle wrapper jar unignore
+!gradle/wrapper/gradle-wrapper.jar
+!android/gradle/wrapper/gradle-wrapper.jar
