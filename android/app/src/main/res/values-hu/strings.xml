@@ -73,7 +73,7 @@
     <string name="msg_transaction_deleted">Tranzakció törölve!</string>
     <string name="msg_all_deleted">Összes tranzakció törölve!</string>
     <string name="msg_reset_done">Minden adat visszaállítva!</string>
-    <string name="msg_category_renamed">Kategória átnevezve!</string>
+    <string name="msg_category_renamed">Kategória frissítve!</string>
     <string name="msg_category_deleted">Kategória törölve!</string>
     <string name="msg_sync_success">Szinkronizáció sikeres!</string>
     <string name="msg_sync_failed">Szinkronizáció sikertelen. Kérjük, próbálja újra.</string>
@@ -92,15 +92,15 @@
     <string name="cat_others">Egyéb</string>
 
     <string name="theme_selection">Felület színsémák, kinézetek</string>
-    <string name="category_edit_title">Kategóriák szerkesztése (Új, átnevezés, törlés)</string>
+    <string name="category_edit_title">Kategóriák szerkesztése (Új, szerkesztés, törlés)</string>
     <string name="add_new_category">Új kategória hozzáadása</string>
     <string name="category_name">Kategória név</string>
     <string name="budget_huf">Keret (HUF)</string>
     <string name="choose_color">Szín választás</string>
     <string name="category_added">Kategória hozzáadva!</string>
     <string name="category_add_failed">Hiba! Már létező név vagy érvénytelen adat.</string>
-    <string name="rename">Átnevezés</string>
-    <string name="rename_category">Kategória átnevezése</string>
+    <string name="rename">Szerkesztés</string>
+    <string name="rename_category">Kategória szerkesztése</string>
     <string name="old_name">Korábbi név: %s</string>
     <string name="new_category_name">Új kategória név</string>
     <string name="delete_category_title">Kategória törlése</string>

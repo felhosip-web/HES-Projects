@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
+import com.example.expensetracker.sync.FirebaseSyncManager
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -32,6 +33,7 @@ data class BackupData(
 @HiltViewModel
 class ExpenseViewModel @Inject constructor(
     private val expenseDao: ExpenseDao,
+    val syncManager: FirebaseSyncManager,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -106,18 +108,21 @@ class ExpenseViewModel @Inject constructor(
                     notes = notes
                 )
             )
+            syncNow()
         }
     }
 
     fun deleteExpense(expense: ExpenseEntity) {
         viewModelScope.launch {
             expenseDao.deleteExpense(expense)
+            syncNow()
         }
     }
 
     fun clearAll() {
         viewModelScope.launch {
             expenseDao.clearAll()
+            syncNow()
         }
     }
 
@@ -126,6 +131,7 @@ class ExpenseViewModel @Inject constructor(
             expenseDao.clearAll()
             saveCategories(defaultCategories)
             setTheme("SLATE_DARK")
+            syncNow()
         }
     }
 
@@ -137,6 +143,7 @@ class ExpenseViewModel @Inject constructor(
 
         val newList = _categories.value + CategoryData(normalized, colorHex, budget)
         saveCategories(newList)
+        syncNow()
         return true
     }
 
@@ -156,6 +163,23 @@ class ExpenseViewModel @Inject constructor(
                 }
             }
             saveCategories(newList)
+            syncNow()
+        }
+        return true
+    }
+
+    fun updateCategoryBudget(name: String, newBudget: Double): Boolean {
+        if (newBudget < 0) return false
+        viewModelScope.launch {
+            val newList = _categories.value.map {
+                if (it.name.equals(name, ignoreCase = true)) {
+                    it.copy(budget = newBudget)
+                } else {
+                    it
+                }
+            }
+            saveCategories(newList)
+            syncNow()
         }
         return true
     }
@@ -166,6 +190,7 @@ class ExpenseViewModel @Inject constructor(
             expenseDao.updateCategoryName(name, "Egyéb")
             val newList = _categories.value.filter { !it.name.equals(name, ignoreCase = true) }
             saveCategories(newList)
+            syncNow()
         }
     }
 
@@ -193,6 +218,41 @@ class ExpenseViewModel @Inject constructor(
             }
         } catch (e: Exception) {
             false
+        }
+    }
+
+    private val _isCloudSyncEnabled = MutableStateFlow(syncManager.isCloudSyncEnabled)
+    val isCloudSyncEnabled: StateFlow<Boolean> = _isCloudSyncEnabled.asStateFlow()
+
+    private val _lastSyncTime = MutableStateFlow(syncManager.lastSyncTime)
+    val lastSyncTime: StateFlow<String> = _lastSyncTime.asStateFlow()
+
+    fun toggleCloudSync(enabled: Boolean) {
+        viewModelScope.launch {
+            if (enabled) {
+                val success = syncManager.enableCloudSync()
+                if (success) {
+                    _isCloudSyncEnabled.value = true
+                    syncNow()
+                }
+            } else {
+                syncManager.disableCloudSync()
+                _isCloudSyncEnabled.value = false
+            }
+        }
+    }
+
+    fun syncNow(onResult: ((Boolean) -> Unit)? = null) {
+        viewModelScope.launch {
+            if (_isCloudSyncEnabled.value) {
+                val success = syncManager.syncNow()
+                if (success) {
+                    _lastSyncTime.value = syncManager.lastSyncTime
+                }
+                onResult?.invoke(success)
+            } else {
+                onResult?.invoke(false)
+            }
         }
     }
 }
