@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Transaction, Category } from '../types';
 import { PlusCircle, Check, X, Banknote, CreditCard, SendToBack } from 'lucide-react';
 import { LucideIcon } from './LucideIcon';
+import { useTranslation } from '../i18n';
 
 interface TransactionFormProps {
   categories: Category[];
@@ -22,14 +23,15 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
   const [notes, setNotes] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'transfer' | undefined>();
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const { t } = useTranslation();
 
   // Filter categories based on transaction type
   // Salary and Investments are income. Others can be both. Rest are expenses.
   const filteredCategories = categories.filter((c) => {
     if (type === 'income') {
-      return c.name === 'Salary' || c.name === 'Investments' || c.name === 'Others';
+      return c.name === 'Fizetés' || c.name === 'Befektetés' || c.name === 'Egyéb' || c.name === 'Salary' || c.name === 'Investments' || c.name === 'Others';
     } else {
-      return c.name !== 'Salary' && c.name !== 'Investments';
+      return c.name !== 'Fizetés' && c.name !== 'Befektetés' && c.name !== 'Salary' && c.name !== 'Investments';
     }
   });
 
@@ -120,11 +122,11 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
 
       {/* Description input */}
       <div>
-        <label htmlFor="tx_desc" className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">Megnevezés</label>
+        <label htmlFor="tx_desc" className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">{t('tx_form_desc_label')}</label>
         <input
           id="tx_desc"
           type="text"
-          placeholder="Pl: Bevásárlás, Rezsi, Fizetés"
+          placeholder={t('tx_form_desc_placeholder')}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className={`w-full bg-slate-950 text-slate-100 border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 ${
@@ -140,14 +142,14 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Amount */}
         <div>
-          <label htmlFor="tx_amount" className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">Összeg (HUF)</label>
+          <label htmlFor="tx_amount" className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">{t('tx_form_amount_label')}</label>
           <div className="relative">
             <input
               id="tx_amount"
               type="number"
               min="1"
               step="any"
-              placeholder="0"
+              placeholder={t('tx_form_amount_placeholder')}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               className={`w-full bg-slate-950 text-slate-100 border rounded-xl pl-4 pr-12 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 ${
@@ -165,7 +167,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
 
         {/* Date */}
         <div>
-          <label htmlFor="tx_date" className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">Dátum</label>
+          <label htmlFor="tx_date" className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">{t('tx_form_date_label')}</label>
           <input
             id="tx_date"
             type="date"
@@ -180,7 +182,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
       {/* Payment Method selector (only for expenses) */}
       {type === 'expense' && (
         <div>
-          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">Fizetés Módja</label>
+          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">{t('tx_form_payment_method')}</label>
           <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
@@ -192,7 +194,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
               }`}
             >
               <Banknote size={20} className="mb-1" />
-              <span className="text-[10px]">Készpénz</span>
+              <span className="text-[10px]">{t('payment_cash')}</span>
             </button>
             <button
               type="button"
@@ -204,7 +206,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
               }`}
             >
               <CreditCard size={20} className="mb-1" />
-              <span className="text-[10px]">Kártya</span>
+              <span className="text-[10px]">{t('payment_card')}</span>
             </button>
             <button
               type="button"
@@ -216,7 +218,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
               }`}
             >
               <SendToBack size={20} className="mb-1" />
-              <span className="text-[10px]">Utalás</span>
+              <span className="text-[10px]">{t('payment_transfer')}</span>
             </button>
           </div>
           {errors.paymentMethod && <p className="text-rose-500 text-xs mt-1 font-medium">{errors.paymentMethod}</p>}
@@ -225,7 +227,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
 
       {/* Category selector */}
       <div>
-        <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">Kategória</label>
+        <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">{t('tx_form_category')}</label>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-40 overflow-y-auto p-1 bg-slate-950 rounded-xl border border-slate-800">
           {filteredCategories.map((cat) => {
             const isSelected = category === cat.name;
@@ -253,11 +255,11 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
 
       {/* Notes text input */}
       <div>
-        <label htmlFor="tx_notes" className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">Jegyzet (Opcionális)</label>
+        <label htmlFor="tx_notes" className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">{t('tx_form_notes')}</label>
         <textarea
           id="tx_notes"
           rows={2}
-          placeholder="Pl. Bolt neve, vásárolt termék részletei"
+          placeholder={t('tx_form_notes_placeholder')}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           className="w-full bg-slate-950 text-slate-100 border border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/80 resize-none"
@@ -272,14 +274,14 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
             onClick={onClose}
             className="flex-1 py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5"
           >
-            <X size={14} /> Mégse
+            <X size={14} /> {t('cat_list_cancel')}
           </button>
         )}
         <button
           type="submit"
           className="flex-1 py-2.5 px-4 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5"
         >
-          <Check size={14} /> Tranzakció Hozzáadása
+          <Check size={14} /> {t('tx_form_save')}
         </button>
       </div>
     </form>
