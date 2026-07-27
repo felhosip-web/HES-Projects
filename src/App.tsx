@@ -10,31 +10,65 @@ import { Charts } from './components/Charts';
 import { TransactionForm } from './components/TransactionForm';
 import { TransactionList } from './components/TransactionList';
 import { CategoriesList } from './components/CategoriesList';
+import { SyncSettings } from './components/SyncSettings';
 import { Wallet, Sparkles, Github, ArrowUpRight } from 'lucide-react';
 import { getTransactions, saveTransaction, deleteTransaction, clearTransactions, getCategories, saveCategories } from './db';
+import { syncToCloud, getAutoSync } from './sync';
 
 export default function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load initial data from IndexedDB
+  const reloadData = async () => {
+    try {
+      const [loadedTxs, loadedCats] = await Promise.all([
+        getTransactions(),
+        getCategories()
+      ]);
+      setTransactions(loadedTxs);
+      setCategories(loadedCats);
+    } catch (e) {
+      console.error("Error loading data from IndexedDB:", e);
+    }
+  };
+
+  // Load initial data from IndexedDB and setup auto-sync
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [loadedTxs, loadedCats] = await Promise.all([
-          getTransactions(),
-          getCategories()
-        ]);
-        setTransactions(loadedTxs);
-        setCategories(loadedCats);
-      } catch (e) {
-        console.error("Error loading data from IndexedDB:", e);
-      } finally {
-        setLoading(false);
+    const init = async () => {
+      await reloadData();
+      setLoading(false);
+
+      if (getAutoSync() && navigator.onLine) {
+        syncToCloud(true).then((success) => {
+          if (success) reloadData();
+        });
       }
     };
-    loadData();
+    init();
+
+    const handleOnline = () => {
+      if (getAutoSync()) {
+        syncToCloud(true).then((success) => {
+          if (success) reloadData();
+        });
+      }
+    };
+
+    window.addEventListener('online', handleOnline);
+
+    const syncInterval = setInterval(() => {
+      if (getAutoSync() && navigator.onLine) {
+         syncToCloud(true).then((success) => {
+           if (success) reloadData();
+         });
+      }
+    }, 30 * 60 * 1000); // 30 mins
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      clearInterval(syncInterval);
+    };
   }, []);
 
   // Sync to IndexedDB handled per-action now instead of purely through effect,
@@ -169,8 +203,11 @@ export default function App() {
           {/* Quick Input Forms and Budgets Section - 4/12 Columns */}
           <div className="lg:col-span-4 space-y-6">
             
+            {/* Sync Settings Component */}
+            <SyncSettings onSyncComplete={reloadData} />
+
             {/* Quick Add Form */}
-            <div id="quick_add_card" className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm">
+            <div id="quick_add_card" className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm mb-6">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-xl">
                   <Sparkles size={20} />
