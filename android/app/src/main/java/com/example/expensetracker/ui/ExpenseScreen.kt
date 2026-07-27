@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -173,9 +174,6 @@ fun ExpenseScreen(
                         }
                     },
                     actions = {
-                        IconButton(onClick = { showClearAllConfirm = true }) {
-                            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete_transactions), tint = Color(0xFFF43F5E))
-                        }
                         IconButton(onClick = { showSettings = true }) {
                             Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.settings), tint = Color.White)
                         }
@@ -847,6 +845,7 @@ fun SettingsScreen(
 
     var showResetConfirm by remember { mutableStateOf(false) }
     var showWipeConfirm by remember { mutableStateOf(false) }
+    var isCategoriesExpanded by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -928,15 +927,30 @@ fun SettingsScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(
-                        text = stringResource(R.string.category_edit_title),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
-                        color = appTheme.textColor
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { isCategoriesExpanded = !isCategoriesExpanded }
+                            .padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(R.string.category_edit_title),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            color = appTheme.textColor
+                        )
+                        Icon(
+                            if (isCategoriesExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                            contentDescription = "Lenyit",
+                            tint = appTheme.textColor
+                        )
+                    }
 
-                    // Form to Add New Category
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (isCategoriesExpanded) {
+                        // Form to Add New Category
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(stringResource(R.string.add_new_category), fontSize = 11.sp, color = appTheme.secondaryTextColor, fontWeight = FontWeight.Bold)
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedTextField(
@@ -1009,54 +1023,56 @@ fun SettingsScreen(
                             colors = ButtonDefaults.buttonColors(containerColor = appTheme.primary),
                             modifier = Modifier.fillMaxWidth()
                         ) {
+                            Icon(Icons.Default.Add, contentDescription = "Hozzáadás", tint = if (appTheme.isDark) Color(0xFF020617) else Color.White)
+                            Spacer(modifier = Modifier.width(4.dp))
                             Text("Hozzáadás", color = if (appTheme.isDark) Color(0xFF020617) else Color.White)
                         }
-                    }
 
-                    Divider(color = appTheme.outlineColor, thickness = 1.dp)
+                        Divider(color = appTheme.outlineColor, thickness = 1.dp)
 
-                    // List of categories with Edit and Delete
-                    Text("Létező kategóriák", fontSize = 11.sp, color = appTheme.secondaryTextColor, fontWeight = FontWeight.Bold)
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        dynamicCategories.forEach { cat ->
-                            val isOthers = cat.name.equals("Others", ignoreCase = true)
-                            val catColor = try {
-                                Color(android.graphics.Color.parseColor(cat.colorHex))
-                            } catch (e: Exception) {
-                                Color.Gray
-                            }
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(appTheme.background, RoundedCornerShape(8.dp))
-                                    .padding(8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                                    Box(modifier = Modifier.size(12.dp).background(catColor, RoundedCornerShape(6.dp)))
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Column {
-                                        Text(cat.name, color = appTheme.textColor, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                                        if (cat.budget > 0) {
-                                            Text("Keret: ${formatHuf(cat.budget)}", color = appTheme.secondaryTextColor, fontSize = 10.sp)
-                                        }
-                                    }
+                        // List of categories with Edit and Delete
+                        Text("Létező kategóriák", fontSize = 11.sp, color = appTheme.secondaryTextColor, fontWeight = FontWeight.Bold)
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            dynamicCategories.forEach { cat ->
+                                val isOthers = cat.name.equals("Others", ignoreCase = true)
+                                val catColor = try {
+                                    Color(android.graphics.Color.parseColor(cat.colorHex))
+                                } catch (e: Exception) {
+                                    Color.Gray
                                 }
 
-                                Row {
-                                    IconButton(onClick = {
-                                        categoryToRename = cat
-                                        renameNewName = cat.name
-                                    }, modifier = Modifier.size(28.dp)) {
-                                        Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.rename), tint = appTheme.primary, modifier = Modifier.size(16.dp))
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(appTheme.background, RoundedCornerShape(8.dp))
+                                        .padding(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                                        Box(modifier = Modifier.size(12.dp).background(catColor, RoundedCornerShape(6.dp)))
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Column {
+                                            Text(cat.name, color = appTheme.textColor, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                                            if (cat.budget > 0) {
+                                                Text("Keret: ${formatHuf(cat.budget)}", color = appTheme.secondaryTextColor, fontSize = 10.sp)
+                                            }
+                                        }
                                     }
-                                    if (!isOthers) {
+
+                                    Row {
                                         IconButton(onClick = {
-                                            categoryToDelete = cat
+                                            categoryToRename = cat
+                                            renameNewName = cat.name
                                         }, modifier = Modifier.size(28.dp)) {
-                                            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete), tint = Color(0xFFF43F5E), modifier = Modifier.size(16.dp))
+                                            Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.rename), tint = appTheme.primary, modifier = Modifier.size(16.dp))
+                                        }
+                                        if (!isOthers) {
+                                            IconButton(onClick = {
+                                                categoryToDelete = cat
+                                            }, modifier = Modifier.size(28.dp)) {
+                                                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete), tint = Color(0xFFF43F5E), modifier = Modifier.size(16.dp))
+                                            }
                                         }
                                     }
                                 }
@@ -1064,6 +1080,7 @@ fun SettingsScreen(
                         }
                     }
                 }
+            }
             }
 
             // 3. Backup and Restore Section
