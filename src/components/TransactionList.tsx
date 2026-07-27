@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Transaction, Category } from '../types';
 import { LucideIcon } from './LucideIcon';
 import { Search, Filter, Trash2, Calendar, FileText, Banknote, CreditCard, SendToBack } from 'lucide-react';
+import { useTranslation } from '../i18n';
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -18,15 +19,16 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
   const [filterCategory, setFilterCategory] = useState('all');
   const [sortBy, setSortBy] = useState<'date-desc' | 'date-asc' | 'amount-desc' | 'amount-asc'>('date-desc');
+  const { t, language } = useTranslation();
 
   // Format currency helper
   const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(val);
+    return new Intl.NumberFormat(language === 'hu' ? 'hu-HU' : 'en-US', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(val);
   };
 
   const getMonthName = (dateString: string) => {
     const d = new Date(dateString);
-    if (isNaN(d.getTime())) return 'Ismeretlen';
+    if (isNaN(d.getTime())) return t('month_unknown');
     return new Intl.DateTimeFormat('hu-HU', { year: 'numeric', month: 'long' }).format(d);
   };
 
@@ -41,9 +43,9 @@ export const TransactionList: React.FC<TransactionListProps> = ({
 
   const getPaymentName = (method?: 'cash' | 'card' | 'transfer') => {
     switch (method) {
-      case 'cash': return 'Készpénz';
-      case 'card': return 'Kártya';
-      case 'transfer': return 'Utalás';
+      case 'cash': return t('payment_cash');
+      case 'card': return t('payment_card');
+      case 'transfer': return t('payment_transfer');
       default: return '';
     }
   };
@@ -95,12 +97,12 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   }, [transactions, searchTerm, filterType, filterCategory, sortBy]);
 
   return (
-    <div id="transaction_list_card" className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm">
+    <div id="transaction_list_card" className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm">
       {/* Search and Filters Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <h3 className="font-semibold text-slate-100 text-lg">Tranzakciók Előzménye</h3>
-          <p className="text-xs text-slate-400">Rendszerezett pénzmozgások listája</p>
+          <h3 className="font-semibold text-slate-100 text-lg">{t('tx_list_history')}</h3>
+          <p className="text-xs text-slate-400">{t('tx_list_all_items')}</p>
         </div>
         {/* Deleted "Összes törlése" button */}
       </div>
@@ -114,7 +116,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
           </span>
           <input
             type="text"
-            placeholder="Keresés..."
+            placeholder={t('tx_list_search_placeholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full bg-slate-950 text-slate-100 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/80"
@@ -128,9 +130,9 @@ export const TransactionList: React.FC<TransactionListProps> = ({
             onChange={(e: any) => setFilterType(e.target.value)}
             className="w-full bg-slate-950 text-slate-300 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/80 appearance-none cursor-pointer"
           >
-            <option value="all">Minden típus</option>
-            <option value="expense">Kiadások</option>
-            <option value="income">Bevételek</option>
+            <option value="all">{t('tx_list_all_types')}</option>
+            <option value="expense">{t('tx_list_expenses')}</option>
+            <option value="income">{t('tx_list_income')}</option>
           </select>
         </div>
 
@@ -141,7 +143,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
             onChange={(e) => setFilterCategory(e.target.value)}
             className="w-full bg-slate-950 text-slate-300 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/80 appearance-none cursor-pointer"
           >
-            <option value="all">Minden kategória</option>
+            <option value="all">{t('tx_list_all_categories')}</option>
             {categories.map((c) => (
               <option key={c.name} value={c.name}>
                 {c.name}
@@ -157,10 +159,10 @@ export const TransactionList: React.FC<TransactionListProps> = ({
             onChange={(e: any) => setSortBy(e.target.value)}
             className="w-full bg-slate-950 text-slate-300 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/80 appearance-none cursor-pointer"
           >
-            <option value="date-desc">Legújabb elöl</option>
-            <option value="date-asc">Legrégebbi elöl</option>
-            <option value="amount-desc">Összeg szerint csökkenő</option>
-            <option value="amount-asc">Összeg szerint növekvő</option>
+            <option value="date-desc">{t('tx_list_sort_newest')}</option>
+            <option value="date-asc">{t('tx_list_sort_oldest')}</option>
+            <option value="amount-desc">{t('tx_list_sort_highest')}</option>
+            <option value="amount-asc">{t('tx_list_sort_lowest')}</option>
           </select>
         </div>
       </div>
@@ -269,8 +271,8 @@ export const TransactionList: React.FC<TransactionListProps> = ({
         ) : (
           <div className="text-center py-12 flex flex-col items-center justify-center">
             <Filter size={32} className="text-slate-700 mb-2" />
-            <p className="text-sm text-slate-400 font-medium">Nincs a szűrésnek megfelelő tranzakció</p>
-            <p className="text-xs text-slate-500 mt-1">Próbálkozz más szűréssel vagy vigyél fel újat!</p>
+            <p className="text-sm text-slate-400 font-medium">{t('tx_list_no_tx')}</p>
+            <p className="text-xs text-slate-500 mt-1">{t('tx_list_no_tx_desc')}</p>
           </div>
         )}
       </div>

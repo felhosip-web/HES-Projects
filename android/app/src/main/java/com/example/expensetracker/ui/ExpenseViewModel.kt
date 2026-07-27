@@ -43,16 +43,16 @@ class ExpenseViewModel @Inject constructor(
     val selectedTheme: StateFlow<String> = _selectedTheme.asStateFlow()
 
     private val defaultCategories = listOf(
-        CategoryData("Food & Dining", "#F43F5E", 150000.0),
-        CategoryData("Shopping", "#EAB308", 80000.0),
-        CategoryData("Housing & Rent", "#3B82F6", 250000.0),
-        CategoryData("Transportation", "#A855F7", 60000.0),
-        CategoryData("Entertainment", "#6366F1", 50000.0),
-        CategoryData("Utilities", "#F97316", 70000.0),
-        CategoryData("Healthcare", "#14B8A6", 40000.0),
-        CategoryData("Salary", "#10B981"),
-        CategoryData("Investments", "#06B6D4"),
-        CategoryData("Others", "#6B7280", 30000.0)
+        CategoryData("Étkezés", "#F43F5E", 150000.0),
+        CategoryData("Vásárlás", "#EAB308", 80000.0),
+        CategoryData("Lakhatás", "#3B82F6", 250000.0),
+        CategoryData("Közlekedés", "#A855F7", 60000.0),
+        CategoryData("Szórakozás", "#6366F1", 50000.0),
+        CategoryData("Rezsi", "#F97316", 70000.0),
+        CategoryData("Egészségügy", "#14B8A6", 40000.0),
+        CategoryData("Fizetés", "#10B981"),
+        CategoryData("Befektetés", "#06B6D4"),
+        CategoryData("Egyéb", "#6B7280", 30000.0)
     )
 
     private val _categories = MutableStateFlow<List<CategoryData>>(emptyList())
@@ -161,9 +161,9 @@ class ExpenseViewModel @Inject constructor(
     }
 
     fun deleteCategory(name: String) {
-        if (name.equals("Others", ignoreCase = true)) return // Prevent deleting Others
+        if (name.equals("Egyéb", ignoreCase = true)) return // Prevent deleting Others
         viewModelScope.launch {
-            expenseDao.updateCategoryName(name, "Others")
+            expenseDao.updateCategoryName(name, "Egyéb")
             val newList = _categories.value.filter { !it.name.equals(name, ignoreCase = true) }
             saveCategories(newList)
         }

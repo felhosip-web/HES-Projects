@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Transaction, Category } from '../types';
 import { TrendingUp, PieChart, Sparkles } from 'lucide-react';
+import { useTranslation } from '../i18n';
 
 interface ChartsProps {
   transactions: Transaction[];
@@ -9,6 +10,7 @@ interface ChartsProps {
 
 export const Charts: React.FC<ChartsProps> = ({ transactions, categories }) => {
   const [hoveredSegment, setHoveredSegment] = useState<number | null>(null);
+  const { t, language } = useTranslation();
 
   // 1. Calculate Category Data for the Donut Chart (Expenses only)
   const categoryData = useMemo(() => {
@@ -170,21 +172,21 @@ export const Charts: React.FC<ChartsProps> = ({ transactions, categories }) => {
 
   // Formatting helper
   const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(val);
+    return new Intl.NumberFormat(language === 'hu' ? 'hu-HU' : 'en-US', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(val);
   };
 
   return (
     <div id="charts_section" className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
       {/* Trend Chart */}
-      <div id="balance_trend_card" className="lg:col-span-8 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm">
+      <div id="balance_trend_card" className="lg:col-span-8 bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-xl">
               <TrendingUp size={20} />
             </div>
             <div>
-              <h3 className="font-semibold text-slate-100 text-lg">Egyenleg Alakulása</h3>
-              <p className="text-xs text-slate-400">Kumulatív nettó egyenleg napi szinten</p>
+              <h3 className="font-semibold text-slate-100 text-lg">{t('charts_cash_flow')}</h3>
+              <p className="text-xs text-slate-400">{t('charts_last_30_days')}</p>
             </div>
           </div>
         </div>
@@ -278,14 +280,14 @@ export const Charts: React.FC<ChartsProps> = ({ transactions, categories }) => {
       </div>
 
       {/* Category Breakdown Donut */}
-      <div id="category_pie_card" className="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm flex flex-col">
+      <div id="category_pie_card" className="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm flex flex-col">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 bg-rose-500/10 text-rose-400 rounded-xl">
             <PieChart size={20} />
           </div>
           <div>
-            <h3 className="font-semibold text-slate-100 text-lg">Kiadások Megoszlása</h3>
-            <p className="text-xs text-slate-400">Kategóriák szerinti felosztás</p>
+            <h3 className="font-semibold text-slate-100 text-lg">{t('charts_expenses_by_category')}</h3>
+            <p className="text-xs text-slate-400">{t('charts_distribution')}</p>
           </div>
         </div>
 

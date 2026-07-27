@@ -1,6 +1,7 @@
 import React from 'react';
 import { Wallet, ArrowDownRight, ArrowUpRight, Percent } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useTranslation } from '../i18n';
 
 interface DashboardStatsProps {
   totalBalance: number;
@@ -13,45 +14,46 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
   totalIncome,
   totalExpenses,
 }) => {
+  const { t, language } = useTranslation();
   const savingsRate = totalIncome > 0 ? Math.max(0, ((totalIncome - totalExpenses) / totalIncome) * 100) : 0;
 
   const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(val);
+    return new Intl.NumberFormat(language === 'hu' ? 'hu-HU' : 'en-US', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(val);
   };
 
   const statItems = [
     {
       id: 'stat_balance',
-      title: 'Aktuális Egyenleg',
+      title: t('stat_balance'),
       value: formatCurrency(totalBalance),
-      desc: 'Összes bevétel és kiadás különbsége',
+      desc: t('stat_balance_desc'),
       icon: Wallet,
       colorClass: totalBalance >= 0 ? 'text-emerald-400 bg-emerald-500/10' : 'text-rose-400 bg-rose-500/10',
       bgColor: 'bg-slate-900',
     },
     {
       id: 'stat_income',
-      title: 'Összes Bevétel',
+      title: t('stat_income'),
       value: formatCurrency(totalIncome),
-      desc: 'Bejövő összegek összesen',
+      desc: t('stat_income_desc'),
       icon: ArrowUpRight,
       colorClass: 'text-emerald-400 bg-emerald-500/10',
       bgColor: 'bg-slate-900',
     },
     {
       id: 'stat_expenses',
-      title: 'Összes Kiadás',
+      title: t('stat_expenses'),
       value: formatCurrency(totalExpenses),
-      desc: 'Kimenő tételek összesen',
+      desc: t('stat_expenses_desc'),
       icon: ArrowDownRight,
       colorClass: 'text-rose-400 bg-rose-500/10',
       bgColor: 'bg-slate-900',
     },
     {
       id: 'stat_savings',
-      title: 'Megtakarítási Ráta',
+      title: t('stat_savings'),
       value: `${savingsRate.toFixed(1)}%`,
-      desc: 'Bevétel megtakarított hányada',
+      desc: t('stat_savings_desc'),
       icon: Percent,
       colorClass: 'text-cyan-400 bg-cyan-500/10',
       bgColor: 'bg-slate-900',
@@ -68,7 +70,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: idx * 0.05 }}
-            className={`p-6 rounded-2xl border border-slate-800 ${item.bgColor} shadow-sm relative overflow-hidden`}
+            className={`p-4 sm:p-6 rounded-2xl border border-slate-800 ${item.bgColor} shadow-sm relative overflow-hidden`}
           >
             <div className="flex justify-between items-start">
               <div>

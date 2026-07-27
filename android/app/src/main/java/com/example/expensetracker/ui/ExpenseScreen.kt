@@ -32,6 +32,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.expensetracker.R
 import com.example.expensetracker.data.ExpenseEntity
 import java.text.NumberFormat
 import java.util.*
@@ -131,7 +133,9 @@ fun ExpenseScreen(
     var showSettings by remember { mutableStateOf(false) }
     var showAddDialog by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
-    var typeFilter by remember { mutableStateOf("Minden") } // "Minden", "Bevétel", "Kiadás"
+    var typeFilter by remember { mutableStateOf("All") }
+    val incomeFilterName = stringResource(R.string.type_income)
+    val expenseFilterName = stringResource(R.string.type_expense)
 
     // Dialog state for delete confirmation
     var transactionToDelete by remember { mutableStateOf<ExpenseEntity?>(null) }
@@ -156,13 +160,13 @@ fun ExpenseScreen(
                     title = {
                         Column {
                             Text(
-                                text = "HES Költségkövető",
+                                text = stringResource(R.string.app_name),
                                 fontWeight = FontWeight.Black,
-                                fontSize = 20.sp,
+                                style = MaterialTheme.typography.titleLarge,
                                 color = Color.White
                             )
                             Text(
-                                text = "Helyi pénzügyi nyilvántartás",
+                                text = stringResource(R.string.dashboard),
                                 fontSize = 11.sp,
                                 color = Color.LightGray
                             )
@@ -170,10 +174,10 @@ fun ExpenseScreen(
                     },
                     actions = {
                         IconButton(onClick = { showClearAllConfirm = true }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Összes törlése", tint = Color(0xFFF43F5E))
+                            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete_transactions), tint = Color(0xFFF43F5E))
                         }
                         IconButton(onClick = { showSettings = true }) {
-                            Icon(Icons.Default.Settings, contentDescription = "Beállítások", tint = Color.White)
+                            Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.settings), tint = Color.White)
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -187,7 +191,7 @@ fun ExpenseScreen(
                     containerColor = appTheme.primary,
                     contentColor = if (appTheme.isDark) Color(0xFF020617) else Color.White
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "Új hozzáadása")
+                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_transaction))
                 }
             },
             containerColor = appTheme.background,
@@ -197,7 +201,7 @@ fun ExpenseScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // 1. KPI Cards
@@ -219,7 +223,7 @@ fun ExpenseScreen(
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
-                            text = "Tranzakciók Előzménye",
+                            text = stringResource(R.string.transaction_history),
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
                             color = appTheme.textColor
@@ -229,7 +233,7 @@ fun ExpenseScreen(
                         OutlinedTextField(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
-                            placeholder = { Text("Keresés...", fontSize = 12.sp, color = appTheme.secondaryTextColor) },
+                            placeholder = { Text(stringResource(R.string.search_placeholder), fontSize = 12.sp, color = appTheme.secondaryTextColor) },
                             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(16.dp), tint = appTheme.secondaryTextColor) },
                             modifier = Modifier.fillMaxWidth(),
                             colors = OutlinedTextFieldDefaults.colors(
@@ -248,7 +252,7 @@ fun ExpenseScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            listOf("Minden", "Kiadás", "Bevétel").forEach { filter ->
+                            listOf("Minden", stringResource(R.string.type_expense), stringResource(R.string.type_income)).forEach { filter ->
                                 val isSelected = typeFilter == filter
                                 Box(
                                     modifier = Modifier
@@ -278,8 +282,8 @@ fun ExpenseScreen(
                     val matchesSearch = tx.description.contains(searchQuery, ignoreCase = true) ||
                             (tx.notes != null && tx.notes.contains(searchQuery, ignoreCase = true))
                     val matchesType = when (typeFilter) {
-                        "Bevétel" -> tx.type == "income"
-                        "Kiadás" -> tx.type == "expense"
+                        incomeFilterName, "Income", "Bevétel" -> tx.type == "income"
+                        expenseFilterName, "Expense", "Kiadás" -> tx.type == "expense"
                         else -> true
                     }
                     matchesSearch && matchesType
@@ -293,7 +297,7 @@ fun ExpenseScreen(
                                         .padding(vertical = 32.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("Nincs a szűrésnek megfelelő tranzakció", color = appTheme.secondaryTextColor, fontSize = 13.sp)
+                            Text(stringResource(R.string.no_recent_transactions), color = appTheme.secondaryTextColor, fontSize = 13.sp)
                         }
                     }
                 } else {
@@ -330,12 +334,12 @@ fun ExpenseScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF43F5E))
                 ) {
-                    Text("Törlés", color = Color.White)
+                    Text(stringResource(R.string.delete), color = Color.White)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { transactionToDelete = null }) {
-                    Text("Mégse", color = appTheme.secondaryTextColor)
+                    Text(stringResource(R.string.cancel), color = appTheme.secondaryTextColor)
                 }
             }
         )
@@ -356,12 +360,12 @@ fun ExpenseScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF43F5E))
                 ) {
-                    Text("Összes törlése", color = Color.White)
+                    Text(stringResource(R.string.delete_transactions), color = Color.White)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showClearAllConfirm = false }) {
-                    Text("Mégse", color = appTheme.secondaryTextColor)
+                    Text(stringResource(R.string.cancel), color = appTheme.secondaryTextColor)
                 }
             }
         )
@@ -390,17 +394,17 @@ fun StatsSection(balance: Double, income: Double, expense: Double, savingsRate: 
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text("Aktuális Egyenleg", color = appTheme.secondaryTextColor, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            Column(modifier = Modifier.padding(12.dp)) {
+                Text(stringResource(R.string.total_balance), color = appTheme.secondaryTextColor, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = formatHuf(balance),
                     fontWeight = FontWeight.Black,
-                    fontSize = 24.sp,
+                    style = MaterialTheme.typography.headlineSmall,
                     color = if (balance >= 0) Color(0xFF10B981) else Color(0xFFF43F5E)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("Összes bevétel és kiadás különbsége", color = appTheme.secondaryTextColor, fontSize = 10.sp)
+                Text(stringResource(R.string.total_balance), color = appTheme.secondaryTextColor, fontSize = 10.sp)
             }
         }
 
@@ -415,7 +419,7 @@ fun StatsSection(balance: Double, income: Double, expense: Double, savingsRate: 
                 modifier = Modifier.weight(1f)
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
-                    Text("Összes Bevétel", color = appTheme.secondaryTextColor, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.total_income), color = appTheme.secondaryTextColor, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(formatHuf(income), fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color(0xFF10B981))
                 }
@@ -428,7 +432,7 @@ fun StatsSection(balance: Double, income: Double, expense: Double, savingsRate: 
                 modifier = Modifier.weight(1f)
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
-                    Text("Összes Kiadás", color = appTheme.secondaryTextColor, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.total_expenses), color = appTheme.secondaryTextColor, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(formatHuf(expense), fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color(0xFFF43F5E))
                 }
@@ -446,7 +450,7 @@ fun StatsSection(balance: Double, income: Double, expense: Double, savingsRate: 
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Megtakarítási Ráta", color = appTheme.secondaryTextColor, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.savings_rate), color = appTheme.secondaryTextColor, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     Text(String.format("%.1f%%", savingsRate), color = Color(0xFF06B6D4), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                 }
                 Spacer(modifier = Modifier.height(6.dp))
@@ -479,8 +483,8 @@ fun ChartsSection(expenses: List<ExpenseEntity>, dynamicCategories: List<Categor
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text("Kiadások Megoszlása", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = appTheme.textColor)
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(stringResource(R.string.filter_expense), fontWeight = FontWeight.Bold, fontSize = 14.sp, color = appTheme.textColor)
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(
@@ -565,8 +569,8 @@ fun BudgetLimitsSection(expenses: List<ExpenseEntity>, dynamicCategories: List<C
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("Költségkeretek & Limitek", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = appTheme.textColor)
+        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text(stringResource(R.string.manage_categories), fontWeight = FontWeight.Bold, fontSize = 14.sp, color = appTheme.textColor)
 
             categoriesWithBudgets.forEach { cat ->
                 val spent = expenseList.filter { it.category.equals(cat.name, ignoreCase = true) }.sumOf { it.amount }
@@ -651,7 +655,7 @@ fun TransactionItem(tx: ExpenseEntity, onDelete: () -> Unit, dynamicCategories: 
                 IconButton(onClick = onDelete, modifier = Modifier.size(24.dp)) {
                     Icon(
                         Icons.Default.Clear,
-                        contentDescription = "Törlés",
+                        contentDescription = stringResource(R.string.delete),
                         tint = Color.Gray,
                         modifier = Modifier.size(16.dp)
                     )
@@ -680,11 +684,14 @@ fun AddTransactionDialog(
         sdf.format(Date())
     }
 
-    val filteredCategories = remember(type, dynamicCategories) {
+    val salaryStr = stringResource(R.string.cat_salary)
+    val investmentsStr = stringResource(R.string.cat_investments)
+    val othersStr = stringResource(R.string.cat_others)
+    val filteredCategories = remember(type, dynamicCategories, salaryStr, investmentsStr, othersStr) {
         if (type == "income") {
-            dynamicCategories.filter { it.name in listOf("Salary", "Investments", "Others") || it.budget <= 0 }
+            dynamicCategories.filter { it.name in listOf(salaryStr, investmentsStr, othersStr) || it.budget <= 0 }
         } else {
-            dynamicCategories.filter { it.name !in listOf("Salary", "Investments") }
+            dynamicCategories.filter { it.name !in listOf(salaryStr, investmentsStr) }
         }
     }
 
@@ -697,7 +704,7 @@ fun AddTransactionDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Új Tranzakció", fontWeight = FontWeight.Bold, color = appTheme.textColor) },
+        title = { Text(stringResource(R.string.new_transaction), fontWeight = FontWeight.Bold, color = appTheme.textColor) },
         containerColor = appTheme.cardBackground,
         text = {
             Column(
@@ -716,7 +723,7 @@ fun AddTransactionDialog(
                         ),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Kiadás", color = Color.White)
+                        Text(stringResource(R.string.type_expense), color = Color.White)
                     }
 
                     Button(
@@ -726,7 +733,7 @@ fun AddTransactionDialog(
                         ),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Bevétel", color = Color.White)
+                        Text(stringResource(R.string.type_income), color = Color.White)
                     }
                 }
 
@@ -734,7 +741,7 @@ fun AddTransactionDialog(
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
-                    label = { Text("Megnevezés", color = appTheme.secondaryTextColor) },
+                    label = { Text(stringResource(R.string.description), color = appTheme.secondaryTextColor) },
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = appTheme.primary,
                         unfocusedBorderColor = appTheme.outlineColor,
@@ -747,7 +754,7 @@ fun AddTransactionDialog(
                 OutlinedTextField(
                     value = amount,
                     onValueChange = { amount = it },
-                    label = { Text("Összeg (HUF)", color = appTheme.secondaryTextColor) },
+                    label = { Text(stringResource(R.string.amount), color = appTheme.secondaryTextColor) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = appTheme.primary,
@@ -758,7 +765,7 @@ fun AddTransactionDialog(
                 )
 
                 // Category selection dropdown
-                Text("Kategória választás", fontSize = 11.sp, color = appTheme.secondaryTextColor, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.category), fontSize = 11.sp, color = appTheme.secondaryTextColor, fontWeight = FontWeight.Bold)
                 Box(
                     modifier = Modifier
                         .height(110.dp)
@@ -804,12 +811,12 @@ fun AddTransactionDialog(
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = appTheme.primary)
             ) {
-                Text("Mentés", color = if (appTheme.isDark) Color(0xFF020617) else Color.White)
+                Text(stringResource(R.string.save), color = if (appTheme.isDark) Color(0xFF020617) else Color.White)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Mégse", color = appTheme.secondaryTextColor)
+                Text(stringResource(R.string.cancel), color = appTheme.secondaryTextColor)
             }
         }
     )
@@ -844,10 +851,10 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Beállítások", fontWeight = FontWeight.Bold, color = Color.White) },
+                title = { Text(stringResource(R.string.settings), fontWeight = FontWeight.Bold, color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Vissza", tint = Color.White)
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.cancel), tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -861,7 +868,7 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp)
+                .padding(12.dp)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -871,9 +878,9 @@ fun SettingsScreen(
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = "Felület színsémák, kinézetek",
+                        text = stringResource(R.string.theme_selection),
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp,
                         color = appTheme.textColor
@@ -920,9 +927,9 @@ fun SettingsScreen(
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(
-                        text = "Kategóriák szerkesztése (Új, átnevezés, törlés)",
+                        text = stringResource(R.string.category_edit_title),
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp,
                         color = appTheme.textColor
@@ -930,12 +937,12 @@ fun SettingsScreen(
 
                     // Form to Add New Category
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Új kategória hozzáadása", fontSize = 11.sp, color = appTheme.secondaryTextColor, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.add_new_category), fontSize = 11.sp, color = appTheme.secondaryTextColor, fontWeight = FontWeight.Bold)
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedTextField(
                                 value = newCatName,
                                 onValueChange = { newCatName = it },
-                                placeholder = { Text("Kategória név", fontSize = 12.sp, color = appTheme.secondaryTextColor) },
+                                placeholder = { Text(stringResource(R.string.category_name), fontSize = 12.sp, color = appTheme.secondaryTextColor) },
                                 modifier = Modifier.weight(1.5f),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = appTheme.primary,
@@ -947,7 +954,7 @@ fun SettingsScreen(
                             OutlinedTextField(
                                 value = newCatBudget,
                                 onValueChange = { newCatBudget = it },
-                                placeholder = { Text("Keret (HUF)", fontSize = 12.sp, color = appTheme.secondaryTextColor) },
+                                placeholder = { Text(stringResource(R.string.budget_huf), fontSize = 12.sp, color = appTheme.secondaryTextColor) },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 modifier = Modifier.weight(1f),
                                 colors = OutlinedTextFieldDefaults.colors(
@@ -960,7 +967,7 @@ fun SettingsScreen(
                         }
 
                         // Preset Colors Row
-                        Text("Szín választás", fontSize = 11.sp, color = appTheme.secondaryTextColor, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.choose_color), fontSize = 11.sp, color = appTheme.secondaryTextColor, fontWeight = FontWeight.Bold)
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
                             modifier = Modifier.fillMaxWidth()
@@ -991,11 +998,11 @@ fun SettingsScreen(
                                 if (newCatName.isNotBlank()) {
                                     val success = viewModel.addCategory(newCatName, selectedColorHex, budgetVal)
                                     if (success) {
-                                        Toast.makeText(context, "Kategória hozzáadva!", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, context.getString(R.string.category_added), Toast.LENGTH_SHORT).show()
                                         newCatName = ""
                                         newCatBudget = ""
                                     } else {
-                                        Toast.makeText(context, "Hiba! Létező név vagy érvénytelen adat.", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, context.getString(R.string.category_add_failed), Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             },
@@ -1043,13 +1050,13 @@ fun SettingsScreen(
                                         categoryToRename = cat
                                         renameNewName = cat.name
                                     }, modifier = Modifier.size(28.dp)) {
-                                        Icon(Icons.Default.Edit, contentDescription = "Átnevezés", tint = appTheme.primary, modifier = Modifier.size(16.dp))
+                                        Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.rename), tint = appTheme.primary, modifier = Modifier.size(16.dp))
                                     }
                                     if (!isOthers) {
                                         IconButton(onClick = {
                                             categoryToDelete = cat
                                         }, modifier = Modifier.size(28.dp)) {
-                                            Icon(Icons.Default.Delete, contentDescription = "Törlés", tint = Color(0xFFF43F5E), modifier = Modifier.size(16.dp))
+                                            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete), tint = Color(0xFFF43F5E), modifier = Modifier.size(16.dp))
                                         }
                                     }
                                 }
@@ -1065,7 +1072,7 @@ fun SettingsScreen(
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         text = "Biztonsági mentés és visszaállítás",
                         fontWeight = FontWeight.Bold,
@@ -1114,7 +1121,7 @@ fun SettingsScreen(
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         text = "Törlési lehetőség",
                         fontWeight = FontWeight.Bold,
@@ -1140,7 +1147,7 @@ fun SettingsScreen(
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF43F5E)),
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("Alaphelyzet", fontSize = 11.sp, color = Color.White)
+                            Text(stringResource(R.string.reset_app), fontSize = 11.sp, color = Color.White)
                         }
                     }
                 }
@@ -1152,9 +1159,9 @@ fun SettingsScreen(
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Verzió: 1.0 (Build 1)", color = appTheme.textColor, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                    Text("Készítette: HES Költségkövető Csapat", color = appTheme.secondaryTextColor, fontSize = 11.sp)
+                Column(modifier = Modifier.fillMaxWidth().padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(stringResource(R.string.version), color = appTheme.textColor, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    Text(stringResource(R.string.developed_by), color = appTheme.secondaryTextColor, fontSize = 11.sp)
                 }
             }
 
@@ -1167,15 +1174,15 @@ fun SettingsScreen(
         val cat = categoryToRename!!
         AlertDialog(
             onDismissRequest = { categoryToRename = null },
-            title = { Text("Kategória átnevezése", fontWeight = FontWeight.Bold, color = appTheme.textColor) },
+            title = { Text(stringResource(R.string.rename_category), fontWeight = FontWeight.Bold, color = appTheme.textColor) },
             containerColor = appTheme.cardBackground,
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Korábbi név: ${cat.name}", color = appTheme.secondaryTextColor, fontSize = 12.sp)
+                    Text(stringResource(R.string.old_name, cat.name), color = appTheme.secondaryTextColor, fontSize = 12.sp)
                     OutlinedTextField(
                         value = renameNewName,
                         onValueChange = { renameNewName = it },
-                        label = { Text("Új kategória név", color = appTheme.secondaryTextColor) },
+                        label = { Text(stringResource(R.string.new_category_name), color = appTheme.secondaryTextColor) },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = appTheme.primary,
                             unfocusedBorderColor = appTheme.outlineColor,
@@ -1191,21 +1198,21 @@ fun SettingsScreen(
                         if (renameNewName.isNotBlank()) {
                             val success = viewModel.renameCategory(cat.name, renameNewName)
                             if (success) {
-                                Toast.makeText(context, "Kategória átnevezve!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.msg_category_renamed), Toast.LENGTH_SHORT).show()
                                 categoryToRename = null
                             } else {
-                                Toast.makeText(context, "Hiba! Már létező név vagy érvénytelen adat.", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.category_add_failed), Toast.LENGTH_SHORT).show()
                             }
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = appTheme.primary)
                 ) {
-                    Text("Mentés", color = if (appTheme.isDark) Color(0xFF020617) else Color.White)
+                    Text(stringResource(R.string.save), color = if (appTheme.isDark) Color(0xFF020617) else Color.White)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { categoryToRename = null }) {
-                    Text("Mégse", color = appTheme.secondaryTextColor)
+                    Text(stringResource(R.string.cancel), color = appTheme.secondaryTextColor)
                 }
             }
         )
@@ -1216,26 +1223,26 @@ fun SettingsScreen(
         val cat = categoryToDelete!!
         AlertDialog(
             onDismissRequest = { categoryToDelete = null },
-            title = { Text("Kategória törlése", fontWeight = FontWeight.Bold, color = appTheme.textColor) },
+            title = { Text(stringResource(R.string.delete_category_title), fontWeight = FontWeight.Bold, color = appTheme.textColor) },
             containerColor = appTheme.cardBackground,
             text = {
-                Text("Biztosan törölni szeretné a(z) '${cat.name}' kategóriát?\n\nAz ehhez a kategóriához tartozó tranzakciók automatikusan az 'Others' kategóriába kerülnek.", color = appTheme.textColor)
+                Text(stringResource(R.string.delete_category_message, cat.name), color = appTheme.textColor)
             },
             confirmButton = {
                 Button(
                     onClick = {
                         viewModel.deleteCategory(cat.name)
-                        Toast.makeText(context, "Kategória törölve!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.msg_category_deleted), Toast.LENGTH_SHORT).show()
                         categoryToDelete = null
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF43F5E))
                 ) {
-                    Text("Törlés", color = Color.White)
+                    Text(stringResource(R.string.delete), color = Color.White)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { categoryToDelete = null }) {
-                    Text("Mégse", color = appTheme.secondaryTextColor)
+                    Text(stringResource(R.string.cancel), color = appTheme.secondaryTextColor)
                 }
             }
         )
@@ -1272,21 +1279,21 @@ fun SettingsScreen(
                         if (importText.isNotBlank()) {
                             val success = viewModel.importBackup(importText)
                             if (success) {
-                                Toast.makeText(context, "Mentés sikeresen visszaállítva!", Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, context.getString(R.string.msg_sync_success), Toast.LENGTH_LONG).show()
                                 showImportDialog = false
                             } else {
-                                Toast.makeText(context, "Visszaállítás sikertelen! Érvénytelen formátum.", Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, context.getString(R.string.msg_sync_failed), Toast.LENGTH_LONG).show()
                             }
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = appTheme.primary)
                 ) {
-                    Text("Visszaállítás", color = if (appTheme.isDark) Color(0xFF020617) else Color.White)
+                    Text(stringResource(R.string.restore_action), color = if (appTheme.isDark) Color(0xFF020617) else Color.White)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showImportDialog = false }) {
-                    Text("Mégse", color = appTheme.secondaryTextColor)
+                    Text(stringResource(R.string.cancel), color = appTheme.secondaryTextColor)
                 }
             }
         )
@@ -1296,7 +1303,7 @@ fun SettingsScreen(
     if (showResetConfirm) {
         AlertDialog(
             onDismissRequest = { showResetConfirm = false },
-            title = { Text("Alaphelyzetbe állítás", fontWeight = FontWeight.Bold, color = appTheme.textColor) },
+            title = { Text(stringResource(R.string.confirm_reset_title), fontWeight = FontWeight.Bold, color = appTheme.textColor) },
             containerColor = appTheme.cardBackground,
             text = {
                 Text("Biztosan alaphelyzetbe szeretné állítani az alkalmazást?\n\nEz törli az összes tranzakciót és visszaállítja az alapértelmezett kategóriákat és témát.", color = appTheme.textColor)
@@ -1305,17 +1312,17 @@ fun SettingsScreen(
                 Button(
                     onClick = {
                         viewModel.resetToDefaults()
-                        Toast.makeText(context, "Minden adat visszaállítva!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.msg_reset_done), Toast.LENGTH_SHORT).show()
                         showResetConfirm = false
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF43F5E))
                 ) {
-                    Text("Visszaállítás", color = Color.White)
+                    Text(stringResource(R.string.restore_action), color = Color.White)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showResetConfirm = false }) {
-                    Text("Mégse", color = appTheme.secondaryTextColor)
+                    Text(stringResource(R.string.cancel), color = appTheme.secondaryTextColor)
                 }
             }
         )
@@ -1334,17 +1341,17 @@ fun SettingsScreen(
                 Button(
                     onClick = {
                         viewModel.clearAll()
-                        Toast.makeText(context, "Összes tranzakció törölve!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.msg_all_deleted), Toast.LENGTH_SHORT).show()
                         showWipeConfirm = false
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF43F5E))
                 ) {
-                    Text("Törlés", color = Color.White)
+                    Text(stringResource(R.string.delete), color = Color.White)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showWipeConfirm = false }) {
-                    Text("Mégse", color = appTheme.secondaryTextColor)
+                    Text(stringResource(R.string.cancel), color = appTheme.secondaryTextColor)
                 }
             }
         )

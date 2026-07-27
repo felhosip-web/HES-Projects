@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Transaction, Category } from '../types';
 import { LucideIcon } from './LucideIcon';
 import { Sparkles, AlertTriangle, Edit2, Check, X, PlusCircle, Trash2 } from 'lucide-react';
+import { useTranslation } from '../i18n';
 
 interface CategoriesListProps {
   transactions: Transaction[];
@@ -12,10 +13,11 @@ interface CategoriesListProps {
 export const CategoriesList: React.FC<CategoriesListProps> = ({ transactions, categories, onUpdateCategories }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editingCategories, setEditingCategories] = useState<Category[]>([...categories]);
+  const { t, language } = useTranslation();
 
   // Format currency helper
   const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(val);
+    return new Intl.NumberFormat(language === 'hu' ? 'hu-HU' : 'en-US', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(val);
   };
 
   // Calculate budget utilization for categories
@@ -73,14 +75,14 @@ export const CategoriesList: React.FC<CategoriesListProps> = ({ transactions, ca
 
   if (isEditing) {
     return (
-      <div id="category_budgets_card" className="bg-slate-900 border border-emerald-500/50 rounded-2xl p-6 shadow-sm">
+      <div id="category_budgets_card" className="bg-slate-900 border border-emerald-500/50 rounded-2xl p-4 sm:p-6 shadow-sm">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-xl">
               <Edit2 size={20} />
             </div>
             <div>
-              <h3 className="font-semibold text-slate-100 text-lg">Kategóriák szerkesztése</h3>
+              <h3 className="font-semibold text-slate-100 text-lg">{t('cat_list_edit_mode')}</h3>
             </div>
           </div>
         </div>
@@ -157,15 +159,15 @@ export const CategoriesList: React.FC<CategoriesListProps> = ({ transactions, ca
   }
 
   return (
-    <div id="category_budgets_card" className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm">
+    <div id="category_budgets_card" className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-amber-500/10 text-amber-400 rounded-xl">
             <AlertTriangle size={20} />
           </div>
           <div>
-            <h3 className="font-semibold text-slate-100 text-lg">Költségkeretek & Limitek</h3>
-            <p className="text-xs text-slate-400">Aktuális havi keretek kihasználtsága</p>
+            <h3 className="font-semibold text-slate-100 text-lg">{t('cat_list_title')}</h3>
+            <p className="text-xs text-slate-400">{t('cat_list_desc')}</p>
           </div>
         </div>
         <button
@@ -216,15 +218,15 @@ export const CategoriesList: React.FC<CategoriesListProps> = ({ transactions, ca
                 </div>
 
                 <div className="flex justify-between text-[10px] text-slate-500">
-                  <span>{budget.percent.toFixed(0)}% elköltve</span>
+                  <span>{budget.percent.toFixed(0)}{t('cat_list_spent')}</span>
                   {isOverBudget ? (
                     <span className="text-rose-400 font-bold flex items-center gap-1">
                       Keret túllépve! (+{formatCurrency(budget.spent - budget.limit)})
                     </span>
                   ) : budget.percent > 85 ? (
-                    <span className="text-amber-400 font-medium">Közel a limithez!</span>
+                    <span className="text-amber-400 font-medium">{t('cat_list_near_limit')}</span>
                   ) : (
-                    <span className="text-slate-500">Biztonságos zóna</span>
+                    <span className="text-slate-500">{t('cat_list_safe_zone')}</span>
                   )}
                 </div>
               </div>
@@ -234,7 +236,7 @@ export const CategoriesList: React.FC<CategoriesListProps> = ({ transactions, ca
       ) : (
         <div className="text-center py-8 border border-dashed border-slate-800 rounded-xl">
           <Sparkles size={24} className="text-slate-600 mb-2" />
-          <p className="text-xs text-slate-500">Nincs beállított költségkeret</p>
+          <p className="text-xs text-slate-500">{t('cat_list_no_budget')}</p>
         </div>
       )}
     </div>

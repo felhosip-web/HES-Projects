@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HES Költségkövető</string>
+    <string name="dashboard">Áttekintés</string>
+    <string name="history">Előzmények</string>
+    <string name="settings">Beállítások</string>
+
+    <string name="total_balance">Aktuális Egyenleg</string>
+    <string name="total_income">Összes Bevétel</string>
+    <string name="total_expenses">Összes Kiadás</string>
+    <string name="savings_rate">Megtakarítás</string>
+
+    <string name="recent_transactions">Legutóbbi Tranzakciók</string>
+    <string name="no_recent_transactions">Nincsenek legutóbbi tranzakciók</string>
+    <string name="add_transaction">Tranzakció Hozzáadása</string>
+
+    <string name="transaction_history">Tranzakciók Előzménye</string>
+    <string name="all_transactions">Összes tranzakció</string>
+    <string name="search_placeholder">Keresés...</string>
+    <string name="filter_all">Összes</string>
+    <string name="filter_income">Bevétel</string>
+    <string name="filter_expense">Kiadás</string>
+
+    <string name="new_transaction">Új Tranzakció</string>
+    <string name="description">Megnevezés</string>
+    <string name="description_placeholder">Pl. Bevásárlás</string>
+    <string name="amount">Összeg (HUF)</string>
+    <string name="amount_placeholder">0</string>
+    <string name="date">Dátum</string>
+    <string name="category">Kategória</string>
+    <string name="payment_method">Fizetés Módja</string>
+    <string name="notes">Jegyzet (Opcionális)</string>
+    <string name="notes_placeholder">További részletek...</string>
+    <string name="save">Mentés</string>
+
+    <string name="type_income">Bevétel</string>
+    <string name="type_expense">Kiadás</string>
+    <string name="payment_cash">Készpénz</string>
+    <string name="payment_card">Kártya</string>
+    <string name="payment_transfer">Utalás</string>
+
+    <string name="settings_title">Beállítások</string>
+    <string name="sync_cloud">Felhő Szinkronizáció</string>
+    <string name="sync_cloud_desc">Biztonsági mentés a HES szervereire</string>
+    <string name="auto_sync">Auto Szinkronizáció</string>
+    <string name="auto_sync_desc">Háttérmentés 30 percenként</string>
+    <string name="last_sync">Utolsó szinkronizálás: %s</string>
+    <string name="never_synced">Még sosem volt szinkronizálva</string>
+    <string name="sync_now">Szinkronizálás most</string>
+    <string name="backup">Mentés</string>
+    <string name="restore">Helyreállítás</string>
+
+    <string name="manage_categories">Kategóriák kezelése</string>
+    <string name="delete_transactions">Tranzakciók törlése</string>
+    <string name="reset_app">Alaphelyzet</string>
+    <string name="version">Verzió: 1.1 (Build 1)</string>
+    <string name="developed_by">Készítette: HES Költségkövető Csapat</string>
+
+    <string name="error_description">Megnevezés megadása kötelező</string>
+    <string name="error_amount">Érvényes összeg megadása kötelező</string>
+
+    <string name="confirm_reset_title">Alaphelyzetbe állítás</string>
+    <string name="confirm_reset_message">Biztosan alaphelyzetbe szeretné állítani az alkalmazást? Ez törli az összes tranzakciót és visszaállítja az alapértelmezett kategóriákat.</string>
+    <string name="confirm_delete_all_title">Tranzakciók törlése</string>
+    <string name="confirm_delete_all_message">Biztosan törölni szeretné az összes tranzakciót?</string>
+    <string name="confirm_restore_message">Illessze be az exportált biztonsági mentés JSON szövegét:</string>
+    <string name="cancel">Mégse</string>
+    <string name="delete">Törlés</string>
+    <string name="reset">Visszaállítás</string>
+    <string name="restore_action">Visszaállítás</string>
+
+    <string name="msg_transaction_saved">Tranzakció elmentve!</string>
+    <string name="msg_transaction_deleted">Tranzakció törölve!</string>
+    <string name="msg_all_deleted">Összes tranzakció törölve!</string>
+    <string name="msg_reset_done">Minden adat visszaállítva!</string>
+    <string name="msg_category_renamed">Kategória átnevezve!</string>
+    <string name="msg_category_deleted">Kategória törölve!</string>
+    <string name="msg_sync_success">Szinkronizáció sikeres!</string>
+    <string name="msg_sync_failed">Szinkronizáció sikertelen. Kérjük, próbálja újra.</string>
+    <string name="msg_backup_success">Felhőbe mentés sikeres!</string>
+    <string name="msg_backup_failed">Mentés sikertelen. Kérjük, próbálja újra.</string>
+
+    <string name="cat_food">Étkezés</string>
+    <string name="cat_shopping">Vásárlás</string>
+    <string name="cat_housing">Lakhatás</string>
+    <string name="cat_transportation">Közlekedés</string>
+    <string name="cat_entertainment">Szórakozás</string>
+    <string name="cat_utilities">Rezsi</string>
+    <string name="cat_healthcare">Egészségügy</string>
+    <string name="cat_salary">Fizetés</string>
+    <string name="cat_investments">Befektetés</string>
+    <string name="cat_others">Egyéb</string>
+
+    <string name="theme_selection">Felület színsémák, kinézetek</string>
+    <string name="category_edit_title">Kategóriák szerkesztése (Új, átnevezés, törlés)</string>
+    <string name="add_new_category">Új kategória hozzáadása</string>
+    <string name="category_name">Kategória név</string>
+    <string name="budget_huf">Keret (HUF)</string>
+    <string name="choose_color">Szín választás</string>
+    <string name="category_added">Kategória hozzáadva!</string>
+    <string name="category_add_failed">Hiba! Már létező név vagy érvénytelen adat.</string>
+    <string name="rename">Átnevezés</string>
+    <string name="rename_category">Kategória átnevezése</string>
+    <string name="old_name">Korábbi név: %s</string>
+    <string name="new_category_name">Új kategória név</string>
+    <string name="delete_category_title">Kategória törlése</string>
+    <string name="delete_category_message">Biztosan törölni szeretné a(z) \'%s\' kategóriát?\n\nAz ehhez a kategóriához tartozó tranzakciók automatikusan az \'Egyéb\' kategóriába kerülnek.</string>
+    <string name="data_management">Adatkezelés (Mentés és Visszaállítás)</string>
+    <string name="export_backup">Mentés Exportálása</string>
+    <string name="restore_backup">Mentés Visszaállítása</string>
+    <string name="danger_zone">Veszélyes Zóna</string>
+</resources>

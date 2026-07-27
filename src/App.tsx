@@ -14,8 +14,10 @@ import { SyncSettings } from './components/SyncSettings';
 import { Wallet, Sparkles, Github, ArrowUpRight } from 'lucide-react';
 import { getTransactions, saveTransaction, deleteTransaction, clearTransactions, getCategories, saveCategories } from './db';
 import { syncToCloud, getAutoSync } from './sync';
+import { LanguageProvider, useTranslation } from './i18n';
 
-export default function App() {
+function AppContent() {
+  const { t } = useTranslation();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -151,12 +153,12 @@ export default function App() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-black text-slate-100 tracking-tight">HES Költségkövető</h1>
+                <h1 className="text-2xl font-black text-slate-100 tracking-tight">{t('app_title')}</h1>
                 <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider font-mono">
-                  v1.0
+                  v1.1
                 </span>
               </div>
-              <p className="text-xs text-slate-400">Egyszerű, tiszta és biztonságos helyi pénzügyi menedzser</p>
+              <p className="text-xs text-slate-400">{t('app_desc')}</p>
             </div>
           </div>
 
@@ -170,7 +172,7 @@ export default function App() {
                 rel="noreferrer"
                 className="text-[10px] text-emerald-400 hover:text-emerald-300 font-semibold flex items-center justify-end gap-0.5 transition-colors"
               >
-                GitHub megnyitása <ArrowUpRight size={10} />
+                {t('open_github')} <ArrowUpRight size={10} />
               </a>
             </div>
           </div>
@@ -213,8 +215,8 @@ export default function App() {
                   <Sparkles size={20} />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-slate-100 text-lg">Tranzakció Rögzítése</h3>
-                  <p className="text-xs text-slate-400">Vigyél fel új bevételt vagy kiadást</p>
+                  <h3 className="font-semibold text-slate-100 text-lg">{t('tx_form_title')}</h3>
+                  <p className="text-xs text-slate-400">{t('tx_form_desc')}</p>
                 </div>
               </div>
               <TransactionForm categories={categories} onSubmit={handleAddTransaction} />
@@ -232,5 +234,14 @@ export default function App() {
 
       </div>
     </div>
+  );
+}
+
+
+export default function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
   );
 }

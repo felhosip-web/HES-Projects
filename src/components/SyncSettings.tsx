@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
 import { Cloud, UploadCloud, DownloadCloud, RefreshCw, CheckCircle, AlertTriangle } from 'lucide-react';
 import { syncToCloud, forceBackup, forceRestore, getLastSyncTime, getAutoSync, setAutoSync as saveAutoSync } from '../sync';
+import { useTranslation } from '../i18n';
 
 export function SyncSettings({ onSyncComplete }: { onSyncComplete: () => void }) {
+  const { t, language, setLanguage } = useTranslation();
   const [autoSync, setAutoSync] = useState(getAutoSync());
   const [lastSync, setLastSync] = useState(getLastSyncTime());
   const [syncing, setSyncing] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' });
 
   const formatTime = (ts: number) => {
-    if (ts === 0) return 'Még sosem volt szinkronizálva';
-    return new Date(ts).toLocaleString('hu-HU');
+    if (ts === 0) return t('sync_never_synced');
+    return new Date(ts).toLocaleString(language === 'hu' ? 'hu-HU' : 'en-US');
   };
 
   const handleToggleAutoSync = () => {
@@ -40,28 +42,47 @@ export function SyncSettings({ onSyncComplete }: { onSyncComplete: () => void })
   };
 
   const handleSync = () => wrapSyncAction(() => syncToCloud(false), 'Szinkronizáció sikeres!', 'Szinkronizáció sikertelen. Kérjük, próbálja újra.');
-  const handleBackup = () => wrapSyncAction(() => forceBackup(), 'Felhőbe mentés sikeres!', 'Mentés sikertelen. Kérjük, próbálja újra.');
+  const handleBackup = () => wrapSyncAction(() => forceBackup(), 'Felhőbe mentés sikeres!', `${t('sync_backup_now')} failed.`);
   const handleRestore = () => {
     if (window.confirm('Biztosan felülírja a helyi adatokat a felhőből származó adatokkal?')) {
-        wrapSyncAction(() => forceRestore(), 'Helyreállítás sikeres!', 'Helyreállítás sikertelen. Kérjük, próbálja újra.');
+        wrapSyncAction(() => forceRestore(), `${t('sync_restore')} success.`, `${t('sync_restore')} failed.`);
     }
   };
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm mb-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-indigo-500/10 text-indigo-400 rounded-xl">
-          <Cloud size={20} />
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-indigo-500/10 text-indigo-400 rounded-xl">
+            <Cloud size={20} />
+          </div>
+          <div>
+            <h3 className="font-semibold text-slate-100 text-lg">{t('sync_title')}</h3>
+            <p className="text-xs text-slate-400">{t('sync_desc')}</p>
+          </div>
         </div>
-        <div>
-          <h3 className="font-semibold text-slate-100 text-lg">Felhő Szinkronizáció</h3>
-          <p className="text-xs text-slate-400">Biztonsági mentés és szinkronizálás a felhővel</p>
+
+        {/* Language Switcher */}
+        <div className="flex items-center gap-2 bg-slate-950 p-1 rounded-lg border border-slate-800">
+           <button
+             onClick={() => setLanguage('hu')}
+             className={`px-2 py-1 text-[10px] font-bold rounded uppercase transition-colors ${language === 'hu' ? 'bg-indigo-500 text-slate-950' : 'text-slate-400 hover:text-slate-200'}`}
+           >
+             HU
+           </button>
+           <button
+             onClick={() => setLanguage('en')}
+             className={`px-2 py-1 text-[10px] font-bold rounded uppercase transition-colors ${language === 'en' ? 'bg-indigo-500 text-slate-950' : 'text-slate-400 hover:text-slate-200'}`}
+           >
+             EN
+           </button>
         </div>
       </div>
 
+
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-slate-300">Automatikus szinkronizáció</span>
+          <span className="text-sm text-slate-300">{t('sync_auto_sync')}</span>
           <button
             onClick={handleToggleAutoSync}
             className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-0.5 ${autoSync ? 'bg-emerald-500' : 'bg-slate-700'}`}
@@ -71,7 +92,7 @@ export function SyncSettings({ onSyncComplete }: { onSyncComplete: () => void })
         </div>
 
         <div className="text-xs text-slate-500">
-          Utolsó szinkronizálás: {formatTime(lastSync)}
+          {t('sync_last_sync')}{formatTime(lastSync)}
         </div>
 
         <div className="grid grid-cols-2 gap-3 mt-4">
@@ -81,7 +102,7 @@ export function SyncSettings({ onSyncComplete }: { onSyncComplete: () => void })
              className="col-span-2 flex items-center justify-center gap-2 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 py-2 px-4 rounded-xl text-sm font-medium transition-colors disabled:opacity-50"
            >
               <RefreshCw size={16} className={syncing ? 'animate-spin' : ''} />
-              Szinkronizálás most
+              {t('sync_now')}
            </button>
 
            <button
@@ -90,7 +111,7 @@ export function SyncSettings({ onSyncComplete }: { onSyncComplete: () => void })
              className="flex items-center justify-center gap-2 bg-slate-800 text-slate-300 hover:bg-slate-700 py-2 px-4 rounded-xl text-xs font-medium transition-colors disabled:opacity-50"
            >
               <UploadCloud size={14} />
-              Mentés
+              {t('sync_backup_now')}
            </button>
 
            <button
@@ -99,7 +120,7 @@ export function SyncSettings({ onSyncComplete }: { onSyncComplete: () => void })
              className="flex items-center justify-center gap-2 bg-slate-800 text-slate-300 hover:bg-slate-700 py-2 px-4 rounded-xl text-xs font-medium transition-colors disabled:opacity-50"
            >
               <DownloadCloud size={14} />
-              Helyreállítás
+              {t('sync_restore')}
            </button>
         </div>
 
