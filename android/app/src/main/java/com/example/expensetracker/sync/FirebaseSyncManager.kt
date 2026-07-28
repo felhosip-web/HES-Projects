@@ -5,6 +5,8 @@ import android.util.Log
 import com.example.expensetracker.data.ExpenseDao
 import com.example.expensetracker.data.ExpenseEntity
 import com.example.expensetracker.ui.CategoryData
+import com.google.firebase.FirebaseApp
+import com.google.firebase.FirebaseOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
@@ -26,10 +28,52 @@ class FirebaseSyncManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val expenseDao: ExpenseDao
 ) {
-    private val auth = FirebaseAuth.getInstance()
-    private val db = FirebaseFirestore.getInstance()
     private val sharedPrefs = context.getSharedPreferences("expense_tracker_prefs", Context.MODE_PRIVATE)
     private val gson = Gson()
+
+    private var customApp: FirebaseApp? = null
+    var auth: FirebaseAuth = FirebaseAuth.getInstance()
+    var db: FirebaseFirestore = FirebaseFirestore.getInstance()
+
+    init {
+        initializeCustomApp()
+    }
+
+    private fun initializeCustomApp() {
+        val apiKey = sharedPrefs.getString("fb_api_key", "")
+        val appId = sharedPrefs.getString("fb_app_id", "")
+        val projectId = sharedPrefs.getString("fb_project_id", "")
+        if (!apiKey.isNullOrEmpty() && !appId.isNullOrEmpty() && !projectId.isNullOrEmpty()) {
+            val options = FirebaseOptions.Builder()
+                .setApiKey(apiKey)
+                .setApplicationId(appId)
+                .setProjectId(projectId)
+                .build()
+            try {
+                customApp = FirebaseApp.getInstance("CustomCloudApp")
+            } catch (e: Exception) {
+                customApp = FirebaseApp.initializeApp(context, options, "CustomCloudApp")
+            }
+            auth = FirebaseAuth.getInstance(customApp!!)
+            db = FirebaseFirestore.getInstance(customApp!!)
+        } else {
+            auth = FirebaseAuth.getInstance()
+            db = FirebaseFirestore.getInstance()
+        }
+    }
+
+    fun saveConfig(apiKey: String, appId: String, projectId: String) {
+        sharedPrefs.edit()
+            .putString("fb_api_key", apiKey)
+            .putString("fb_app_id", appId)
+            .putString("fb_project_id", projectId)
+            .apply()
+        initializeCustomApp()
+    }
+
+    fun getApiKey() = sharedPrefs.getString("fb_api_key", "") ?: ""
+    fun getAppId() = sharedPrefs.getString("fb_app_id", "") ?: ""
+    fun getProjectId() = sharedPrefs.getString("fb_project_id", "") ?: ""
 
     private val TAG = "FirebaseSyncManager"
 

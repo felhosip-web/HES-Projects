@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Cloud, UploadCloud, DownloadCloud, RefreshCw, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Cloud, UploadCloud, DownloadCloud, RefreshCw, CheckCircle, AlertTriangle, Settings } from 'lucide-react';
 import { syncToCloud, forceBackup, forceRestore, getLastSyncTime, getAutoSync, setAutoSync as saveAutoSync } from '../sync';
 import { useTranslation } from '../i18n';
 
@@ -9,6 +9,12 @@ export function SyncSettings({ onSyncComplete }: { onSyncComplete: () => void })
   const [lastSync, setLastSync] = useState(getLastSyncTime());
   const [syncing, setSyncing] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' });
+
+  const [showFirebaseConfig, setShowFirebaseConfig] = useState(false);
+  const [firebaseConfigText, setFirebaseConfigText] = useState(() => {
+      const saved = localStorage.getItem('hes_firebase_config');
+      return saved ? saved : JSON.stringify({ apiKey: "", authDomain: "", projectId: "", storageBucket: "", messagingSenderId: "", appId: "" }, null, 2);
+  });
 
   const formatTime = (ts: number) => {
     if (ts === 0) return t('sync_never_synced');
@@ -57,7 +63,12 @@ export function SyncSettings({ onSyncComplete }: { onSyncComplete: () => void })
             <Cloud size={20} />
           </div>
           <div>
-            <h3 className="font-semibold text-slate-100 text-lg">{t('sync_title')}</h3>
+            <div className="flex items-center gap-2">
+                <h3 className="font-semibold text-slate-100 text-lg">{t('sync_title')}</h3>
+                <button onClick={() => setShowFirebaseConfig(true)} className="text-slate-500 hover:text-slate-300 transition-colors">
+                    <Settings size={16} />
+                </button>
+            </div>
             <p className="text-xs text-slate-400">{t('sync_desc')}</p>
           </div>
         </div>
@@ -131,6 +142,32 @@ export function SyncSettings({ onSyncComplete }: { onSyncComplete: () => void })
           </div>
         )}
       </div>
+
+      {showFirebaseConfig && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+           <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 w-full max-w-md shadow-2xl">
+               <h3 className="text-lg font-bold mb-4 text-slate-100">Felhő Beállítások (Firebase)</h3>
+               <p className="text-xs text-slate-400 mb-4">Illessze be a Firebase konfigurációs JSON objektumot ide:</p>
+               <textarea
+                  className="w-full h-48 bg-slate-950 text-slate-300 p-3 text-xs border border-slate-800 rounded-xl focus:border-indigo-500 outline-none font-mono"
+                  value={firebaseConfigText}
+                  onChange={e => setFirebaseConfigText(e.target.value)}
+               />
+               <div className="flex justify-end gap-3 mt-6">
+                   <button onClick={() => setShowFirebaseConfig(false)} className="px-4 py-2 text-sm text-slate-400 hover:text-slate-200">Mégse</button>
+                   <button onClick={() => {
+                       try {
+                           const parsed = JSON.parse(firebaseConfigText);
+                           localStorage.setItem('hes_firebase_config', JSON.stringify(parsed));
+                           window.location.reload();
+                       } catch(e) {
+                           alert("Érvénytelen JSON formátum!");
+                       }
+                   }} className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 rounded-xl text-white text-sm font-medium transition-colors">Mentés & Újratöltés</button>
+               </div>
+           </div>
+        </div>
+      )}
     </div>
   );
 }

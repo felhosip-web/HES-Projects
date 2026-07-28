@@ -18,7 +18,23 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:00000000000:web:abcdef123456"
 };
 
-const app = initializeApp(firebaseConfig);
+export const getCustomFirebaseConfig = () => {
+  const saved = localStorage.getItem('hes_firebase_config');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (parsed && typeof parsed === 'object' && parsed.apiKey && parsed.projectId) {
+          return parsed;
+      }
+    } catch(e) {
+      console.error("Invalid custom firebase config", e);
+    }
+  }
+  return null;
+};
+
+const customConfig = getCustomFirebaseConfig();
+const app = initializeApp(customConfig ? customConfig : firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
