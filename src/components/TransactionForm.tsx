@@ -25,14 +25,9 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { t } = useTranslation();
 
-  // Filter categories based on transaction type
-  // Salary and Investments are income. Others can be both. Rest are expenses.
+  // Filter categories based on transaction type using the new type field
   const filteredCategories = categories.filter((c) => {
-    if (type === 'income') {
-      return c.name === 'Fizetés' || c.name === 'Befektetés' || c.name === 'Egyéb' || c.name === 'Salary' || c.name === 'Investments' || c.name === 'Others';
-    } else {
-      return c.name !== 'Fizetés' && c.name !== 'Befektetés' && c.name !== 'Salary' && c.name !== 'Investments';
-    }
+    return !c.type || c.type === 'both' || c.type === type;
   });
 
   // Automatically select first category of filtered list if current selection is invalid

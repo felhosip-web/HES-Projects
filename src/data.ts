@@ -1,16 +1,16 @@
 import { Category, Transaction } from './types';
 
 export const DEFAULT_CATEGORIES: Category[] = [
-  { name: 'Étkezés', icon: 'Utensils', color: '#f43f5e', budget: 150000 },
-  { name: 'Vásárlás', icon: 'ShoppingBag', color: '#eab308', budget: 80000 },
-  { name: 'Lakhatás', icon: 'Home', color: '#3b82f6', budget: 250000 },
-  { name: 'Közlekedés', icon: 'Car', color: '#a855f7', budget: 60000 },
-  { name: 'Szórakozás', icon: 'Tv', color: '#6366f1', budget: 50000 },
-  { name: 'Rezsi', icon: 'Zap', color: '#f97316', budget: 70000 },
-  { name: 'Egészségügy', icon: 'HeartPulse', color: '#14b8a6', budget: 40000 },
-  { name: 'Fizetés', icon: 'Briefcase', color: '#10b981' },
-  { name: 'Befektetés', icon: 'TrendingUp', color: '#06b6d4' },
-  { name: 'Egyéb', icon: 'DollarSign', color: '#6b7280', budget: 30000 },
+  { name: 'Étkezés', icon: 'Utensils', color: '#f43f5e', budget: 150000, type: 'expense' },
+  { name: 'Vásárlás', icon: 'ShoppingBag', color: '#eab308', budget: 80000, type: 'expense' },
+  { name: 'Lakhatás', icon: 'Home', color: '#3b82f6', budget: 250000, type: 'expense' },
+  { name: 'Közlekedés', icon: 'Car', color: '#a855f7', budget: 60000, type: 'expense' },
+  { name: 'Szórakozás', icon: 'Tv', color: '#6366f1', budget: 50000, type: 'expense' },
+  { name: 'Rezsi', icon: 'Zap', color: '#f97316', budget: 70000, type: 'expense' },
+  { name: 'Egészségügy', icon: 'HeartPulse', color: '#14b8a6', budget: 40000, type: 'expense' },
+  { name: 'Fizetés', icon: 'Briefcase', color: '#10b981', type: 'income' },
+  { name: 'Befektetés', icon: 'TrendingUp', color: '#06b6d4', type: 'income' },
+  { name: 'Egyéb', icon: 'DollarSign', color: '#6b7280', budget: 30000, type: 'both' },
 ];
 
 export const DEFAULT_TRANSACTIONS: Transaction[] = [

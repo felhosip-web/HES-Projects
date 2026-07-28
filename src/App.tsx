@@ -155,7 +155,7 @@ function AppContent() {
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-black text-slate-100 tracking-tight">{t('app_title')}</h1>
                 <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider font-mono">
-                  v1.1
+                  v1.2
                 </span>
               </div>
               <p className="text-xs text-slate-400">{t('app_desc')}</p>

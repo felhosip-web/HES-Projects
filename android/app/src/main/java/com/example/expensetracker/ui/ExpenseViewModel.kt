@@ -21,7 +21,8 @@ import javax.inject.Inject
 data class CategoryData(
     val name: String,
     val colorHex: String,
-    val budget: Double = 0.0
+    val budget: Double = 0.0,
+    val type: String = "expense" // "expense", "income", or "both"
 )
 
 data class BackupData(
@@ -45,16 +46,16 @@ class ExpenseViewModel @Inject constructor(
     val selectedTheme: StateFlow<String> = _selectedTheme.asStateFlow()
 
     private val defaultCategories = listOf(
-        CategoryData("Étkezés", "#F43F5E", 150000.0),
-        CategoryData("Vásárlás", "#EAB308", 80000.0),
-        CategoryData("Lakhatás", "#3B82F6", 250000.0),
-        CategoryData("Közlekedés", "#A855F7", 60000.0),
-        CategoryData("Szórakozás", "#6366F1", 50000.0),
-        CategoryData("Rezsi", "#F97316", 70000.0),
-        CategoryData("Egészségügy", "#14B8A6", 40000.0),
-        CategoryData("Fizetés", "#10B981"),
-        CategoryData("Befektetés", "#06B6D4"),
-        CategoryData("Egyéb", "#6B7280", 30000.0)
+        CategoryData("Étkezés", "#F43F5E", 150000.0, "expense"),
+        CategoryData("Vásárlás", "#EAB308", 80000.0, "expense"),
+        CategoryData("Lakhatás", "#3B82F6", 250000.0, "expense"),
+        CategoryData("Közlekedés", "#A855F7", 60000.0, "expense"),
+        CategoryData("Szórakozás", "#6366F1", 50000.0, "expense"),
+        CategoryData("Rezsi", "#F97316", 70000.0, "expense"),
+        CategoryData("Egészségügy", "#14B8A6", 40000.0, "expense"),
+        CategoryData("Fizetés", "#10B981", 0.0, "income"),
+        CategoryData("Befektetés", "#06B6D4", 0.0, "income"),
+        CategoryData("Egyéb", "#6B7280", 30000.0, "both")
     )
 
     private val _categories = MutableStateFlow<List<CategoryData>>(emptyList())
@@ -136,12 +137,12 @@ class ExpenseViewModel @Inject constructor(
     }
 
     // Dynamic Category Management
-    fun addCategory(name: String, colorHex: String, budget: Double = 0.0): Boolean {
+    fun addCategory(name: String, colorHex: String, budget: Double = 0.0, type: String = "expense"): Boolean {
         val normalized = name.trim()
         if (normalized.isBlank()) return false
         if (_categories.value.any { it.name.equals(normalized, ignoreCase = true) }) return false
 
-        val newList = _categories.value + CategoryData(normalized, colorHex, budget)
+        val newList = _categories.value + CategoryData(normalized, colorHex, budget, type)
         saveCategories(newList)
         syncNow()
         return true

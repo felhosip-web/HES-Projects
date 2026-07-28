@@ -16,6 +16,7 @@ export interface Category {
   icon: string; // Lucide icon name
   color: string; // hex or tailwind class color
   budget?: number; // Optional monthly budget
+  type?: 'income' | 'expense' | 'both'; // Target transaction type
   updatedAt?: number;
   deleted?: boolean;
 }
