@@ -366,53 +366,76 @@ fun ExpenseScreen(
                         }
                     }
                 } else {
-                    items(filteredExpenses) { expense ->
-                        val catData = dynamicCategories.find { it.name.equals(expense.category, ignoreCase = true) }
-                        val catColor = try {
-                            if (catData != null) Color(android.graphics.Color.parseColor(catData.colorHex)) else Color.Gray
-                        } catch (e: Exception) { Color.Gray }
+                    val groupedExpenses = filteredExpenses.sortedByDescending { it.date }.groupBy {
+                        try {
+                            val parser = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                            val date = parser.parse(it.date)
+                            val formatter = SimpleDateFormat("yyyy. MMMM", Locale("hu", "HU"))
+                            date?.let { d -> formatter.format(d) } ?: it.date
+                        } catch (e: Exception) {
+                            it.date
+                        }
+                    }
 
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(containerColor = appTheme.cardBackground),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                    groupedExpenses.forEach { (month, expensesForMonth) ->
+                        item {
+                            Text(
+                                text = month.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() },
+                                color = appTheme.primary,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                            )
+                        }
+
+                        items(expensesForMonth) { expense ->
+                            val catData = dynamicCategories.find { it.name.equals(expense.category, ignoreCase = true) }
+                            val catColor = try {
+                                if (catData != null) Color(android.graphics.Color.parseColor(catData.colorHex)) else Color.Gray
+                            } catch (e: Exception) { Color.Gray }
+
+                            Card(
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                                colors = CardDefaults.cardColors(containerColor = appTheme.cardBackground),
+                                shape = RoundedCornerShape(12.dp)
                             ) {
-                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                                    Box(
-                                        modifier = Modifier.size(40.dp).background(catColor.copy(alpha = 0.15f), RoundedCornerShape(10.dp)),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = if (expense.type == "income") Icons.Default.ArrowDownward else Icons.Default.ArrowUpward,
-                                            contentDescription = null,
-                                            tint = catColor
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Column {
-                                        Text(expense.description, color = appTheme.textColor, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                        Text(expense.category + " • " + expense.date, color = appTheme.secondaryTextColor, fontSize = 12.sp)
-                                        if (!expense.notes.isNullOrBlank()) {
-                                            Text(expense.notes, color = appTheme.secondaryTextColor, fontSize = 11.sp, maxLines = 1)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                                        Box(
+                                            modifier = Modifier.size(40.dp).background(catColor.copy(alpha = 0.15f), RoundedCornerShape(10.dp)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = if (expense.type == "income") Icons.Default.ArrowDownward else Icons.Default.ArrowUpward,
+                                                contentDescription = null,
+                                                tint = catColor
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Column {
+                                            Text(expense.description, color = appTheme.textColor, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                            Text(expense.category + " • " + expense.date, color = appTheme.secondaryTextColor, fontSize = 12.sp)
+                                            if (!expense.notes.isNullOrBlank()) {
+                                                Text(expense.notes, color = appTheme.secondaryTextColor, fontSize = 11.sp, maxLines = 1)
+                                            }
                                         }
                                     }
-                                }
 
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        text = if (expense.type == "income") "+${formatHuf(expense.amount)}" else "-${formatHuf(expense.amount)}",
-                                        color = if (expense.type == "income") Color(0xFF10B981) else Color(0xFFF43F5E),
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 15.sp
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    IconButton(onClick = { transactionToDelete = expense }, modifier = Modifier.size(24.dp)) {
-                                        Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete), tint = Color(0xFFF43F5E), modifier = Modifier.size(16.dp))
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = if (expense.type == "income") "+${formatHuf(expense.amount)}" else "-${formatHuf(expense.amount)}",
+                                            color = if (expense.type == "income") Color(0xFF10B981) else Color(0xFFF43F5E),
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 15.sp
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        IconButton(onClick = { transactionToDelete = expense }, modifier = Modifier.size(24.dp)) {
+                                            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete), tint = Color(0xFFF43F5E), modifier = Modifier.size(16.dp))
+                                        }
                                     }
                                 }
                             }
@@ -475,11 +498,22 @@ fun AddTransactionDialog(
     var description by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
     var type by remember { mutableStateOf("expense") } // "expense" or "income"
-    var category by remember { mutableStateOf(dynamicCategories.firstOrNull()?.name ?: "Egyéb") }
+
+    val filteredCategories = remember(type, dynamicCategories) {
+        dynamicCategories.filter { it.type == "both" || it.type == type }
+    }
+
+    var category by remember { mutableStateOf(filteredCategories.firstOrNull()?.name ?: "Egyéb") }
     var notes by remember { mutableStateOf("") }
 
     val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
     val date = formatter.format(Date())
+
+    LaunchedEffect(type) {
+        if (filteredCategories.none { it.name == category }) {
+            category = filteredCategories.firstOrNull()?.name ?: "Egyéb"
+        }
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -569,7 +603,7 @@ fun AddTransactionDialog(
                         onDismissRequest = { expanded = false },
                         modifier = Modifier.background(appTheme.cardBackground)
                     ) {
-                        dynamicCategories.forEach { cat ->
+                        filteredCategories.forEach { cat ->
                             DropdownMenuItem(
                                 text = { Text(cat.name, color = appTheme.textColor) },
                                 onClick = {
@@ -629,6 +663,7 @@ fun SettingsScreen(
 
     var newCatName by remember { mutableStateOf("") }
     var newCatBudget by remember { mutableStateOf("") }
+    var newCatType by remember { mutableStateOf("expense") } // "expense", "income" or "both"
     var selectedColorHex by remember { mutableStateOf(PRESET_COLORS.first()) }
 
     var categoryToRename by remember { mutableStateOf<CategoryData?>(null) }
@@ -759,7 +794,7 @@ fun SettingsScreen(
                                 value = newCatName,
                                 onValueChange = { newCatName = it },
                                 placeholder = { Text(stringResource(R.string.category_name), fontSize = 12.sp, color = appTheme.secondaryTextColor) },
-                                modifier = Modifier.weight(1.5f),
+                                modifier = Modifier.weight(1f),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = appTheme.primary,
                                     unfocusedBorderColor = appTheme.outlineColor,
@@ -780,6 +815,39 @@ fun SettingsScreen(
                                     unfocusedTextColor = appTheme.textColor
                                 )
                             )
+                        }
+
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Button(
+                                onClick = { newCatType = "expense" },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (newCatType == "expense") Color(0xFFF43F5E) else appTheme.outlineColor
+                                ),
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 0.dp, bottomEnd = 0.dp)
+                            ) {
+                                Text(stringResource(R.string.type_expense), color = if (newCatType == "expense") Color.White else appTheme.textColor, fontSize = 12.sp)
+                            }
+                            Button(
+                                onClick = { newCatType = "both" },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (newCatType == "both") appTheme.primary else appTheme.outlineColor
+                                ),
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(0.dp)
+                            ) {
+                                Text("Mindkettő", color = if (newCatType == "both") Color.White else appTheme.textColor, fontSize = 12.sp)
+                            }
+                            Button(
+                                onClick = { newCatType = "income" },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (newCatType == "income") Color(0xFF10B981) else appTheme.outlineColor
+                                ),
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(topStart = 0.dp, bottomStart = 0.dp, topEnd = 8.dp, bottomEnd = 8.dp)
+                            ) {
+                                Text(stringResource(R.string.type_income), color = if (newCatType == "income") Color.White else appTheme.textColor, fontSize = 12.sp)
+                            }
                         }
 
                         // Preset Colors Row
@@ -812,11 +880,12 @@ fun SettingsScreen(
                             onClick = {
                                 val budgetVal = newCatBudget.toDoubleOrNull() ?: 0.0
                                 if (newCatName.isNotBlank()) {
-                                    val success = viewModel.addCategory(newCatName, selectedColorHex, budgetVal)
+                                    val success = viewModel.addCategory(newCatName, selectedColorHex, budgetVal, newCatType)
                                     if (success) {
                                         Toast.makeText(context, context.getString(R.string.category_added), Toast.LENGTH_SHORT).show()
                                         newCatName = ""
                                         newCatBudget = ""
+                                        newCatType = "expense"
                                     } else {
                                         Toast.makeText(context, context.getString(R.string.category_add_failed), Toast.LENGTH_SHORT).show()
                                     }

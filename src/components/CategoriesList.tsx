@@ -110,8 +110,8 @@ export const CategoriesList: React.FC<CategoriesListProps> = ({ transactions, ca
                   type="text"
                   value={cat.icon}
                   onChange={(e) => handleEditChange(idx, 'icon', e.target.value)}
-                  className="w-1/2 bg-slate-900 text-slate-100 border border-slate-700 rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-emerald-500"
-                  placeholder="Ikon (Lucide)"
+                  className="w-1/3 bg-slate-900 text-slate-100 border border-slate-700 rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-emerald-500"
+                  placeholder="Ikon"
                 />
                 <input
                   type="color"
@@ -119,6 +119,15 @@ export const CategoriesList: React.FC<CategoriesListProps> = ({ transactions, ca
                   onChange={(e) => handleEditChange(idx, 'color', e.target.value)}
                   className="w-8 h-8 rounded cursor-pointer bg-slate-900 border-none p-0"
                 />
+                <select
+                  value={cat.type || 'expense'}
+                  onChange={(e) => handleEditChange(idx, 'type', e.target.value)}
+                  className="w-1/4 bg-slate-900 text-slate-100 border border-slate-700 rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-emerald-500 appearance-none"
+                >
+                  <option value="expense">Kiadás</option>
+                  <option value="income">Bevétel</option>
+                  <option value="both">Mindkettő</option>
+                </select>
                 <input
                   type="number"
                   value={cat.budget || ''}
