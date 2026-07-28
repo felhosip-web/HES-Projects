@@ -644,6 +644,8 @@ fun SettingsScreen(
     var showWipeConfirm by remember { mutableStateOf(false) }
     var isCategoriesExpanded by rememberSaveable { mutableStateOf(false) }
 
+    var showCloudConfigDialog by remember { mutableStateOf(false) }
+
     val isSettingsCloudSyncEnabled by viewModel.isCloudSyncEnabled.collectAsState()
     val settingsLastSyncTime by viewModel.lastSyncTime.collectAsState()
 
@@ -896,12 +898,18 @@ fun SettingsScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = stringResource(R.string.sync_cloud),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp,
-                            color = appTheme.textColor
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = stringResource(R.string.sync_cloud),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                                color = appTheme.textColor
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            IconButton(onClick = { showCloudConfigDialog = true }, modifier = Modifier.size(24.dp)) {
+                                Icon(androidx.compose.material.icons.Icons.Default.Settings, contentDescription = "Beállítások", tint = appTheme.secondaryTextColor, modifier = Modifier.size(16.dp))
+                            }
+                        }
                         Switch(
                             checked = isSettingsCloudSyncEnabled,
                             onCheckedChange = { viewModel.toggleCloudSync(it) },
@@ -1243,6 +1251,57 @@ fun SettingsScreen(
             dismissButton = {
                 TextButton(onClick = { showWipeConfirm = false }) {
                     Text(stringResource(R.string.cancel), color = appTheme.secondaryTextColor)
+                }
+            }
+        )
+    }
+
+    // Cloud Config Dialog
+    if (showCloudConfigDialog) {
+        var apiKey by remember { mutableStateOf(viewModel.syncManager.getApiKey()) }
+        var appId by remember { mutableStateOf(viewModel.syncManager.getAppId()) }
+        var projectId by remember { mutableStateOf(viewModel.syncManager.getProjectId()) }
+
+        AlertDialog(
+            onDismissRequest = { showCloudConfigDialog = false },
+            title = { Text("Felhő Beállítások (Firebase)", fontWeight = FontWeight.Bold, color = appTheme.textColor) },
+            containerColor = appTheme.cardBackground,
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = apiKey,
+                        onValueChange = { apiKey = it },
+                        label = { Text("API Key", color = appTheme.secondaryTextColor) },
+                        colors = OutlinedTextFieldDefaults.colors(focusedTextColor = appTheme.textColor, unfocusedTextColor = appTheme.textColor)
+                    )
+                    OutlinedTextField(
+                        value = appId,
+                        onValueChange = { appId = it },
+                        label = { Text("App ID", color = appTheme.secondaryTextColor) },
+                        colors = OutlinedTextFieldDefaults.colors(focusedTextColor = appTheme.textColor, unfocusedTextColor = appTheme.textColor)
+                    )
+                    OutlinedTextField(
+                        value = projectId,
+                        onValueChange = { projectId = it },
+                        label = { Text("Project ID", color = appTheme.secondaryTextColor) },
+                        colors = OutlinedTextFieldDefaults.colors(focusedTextColor = appTheme.textColor, unfocusedTextColor = appTheme.textColor)
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.syncManager.saveConfig(apiKey, appId, projectId)
+                        showCloudConfigDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = appTheme.primary)
+                ) {
+                    Text("Mentés", color = if (appTheme.isDark) Color(0xFF020617) else Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCloudConfigDialog = false }) {
+                    Text("Mégse", color = appTheme.secondaryTextColor)
                 }
             }
         )
