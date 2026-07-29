@@ -53,7 +53,7 @@
     <string name="manage_categories">Kategóriák kezelése</string>
     <string name="delete_transactions">Tranzakciók törlése</string>
     <string name="reset_app">Alaphelyzet</string>
-    <string name="version">Verzió: 1.1 (Build 1)</string>
+    <string name="version">Verzió: 1.2 (Build 2)</string>
     <string name="developed_by">Készítette: HES Költségkövető Csapat</string>
 
     <string name="error_description">Megnevezés megadása kötelező</string>
