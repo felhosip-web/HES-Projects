@@ -39,11 +39,20 @@ import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.ui.res.stringResource
 
+import android.os.Build
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.ui.platform.LocalContext
+
+data class ThemeConfig(val displayName: String, val background: Color, val cardBackground: Color, val primary: Color, val outlineColor: Color, val textColor: Color, val secondaryTextColor: Color, val isDark: Boolean)
+
 enum class AppTheme(val displayName: String, val background: Color, val cardBackground: Color, val primary: Color, val outlineColor: Color, val textColor: Color, val secondaryTextColor: Color, val isDark: Boolean) {
     SLATE_DARK("Sötét", Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF38BDF8), Color(0xFF334155), Color(0xFFF8FAFC), Color(0xFF94A3B8), true),
     LIGHT_THEME("Világos", Color(0xFFF8FAFC), Color.White, Color(0xFF3B82F6), Color(0xFFE2E8F0), Color(0xFF0F172A), Color(0xFF475569), false),
     EMERALD_DARK("Sötét (Zöld)", Color(0xFF064E3B), Color(0xFF065F46), Color(0xFF10B981), Color(0xFF047857), Color(0xFFECFDF5), Color(0xFFA7F3D0), true),
-    OCEAN_DARK("Sötét (Kék)", Color(0xFF082F49), Color(0xFF064E3B), Color(0xFF0EA5E9), Color(0xFF0369A1), Color(0xFFF0F9FF), Color(0xFFBAE6FD), true)
+    OCEAN_DARK("Sötét (Kék)", Color(0xFF082F49), Color(0xFF064E3B), Color(0xFF0EA5E9), Color(0xFF0369A1), Color(0xFFF0F9FF), Color(0xFFBAE6FD), true),
+    DYNAMIC("Dinamikus (Material You)", Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF38BDF8), Color(0xFF334155), Color(0xFFF8FAFC), Color(0xFF94A3B8), true) // Placeholder colors
 }
 
 val PRESET_COLORS = listOf(
@@ -66,10 +75,37 @@ fun ExpenseScreen(
     val selectedThemeKey by viewModel.selectedTheme.collectAsState()
     val isCloudSyncEnabledMain by viewModel.isCloudSyncEnabled.collectAsState()
 
-    val appTheme = try {
+    val baseTheme = try {
         AppTheme.valueOf(selectedThemeKey)
     } catch (e: Exception) {
         AppTheme.SLATE_DARK
+    }
+
+    val context = LocalContext.current
+    val isSystemDark = isSystemInDarkTheme()
+    val appTheme = if (baseTheme == AppTheme.DYNAMIC && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        val dynamicColor = if (isSystemDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        ThemeConfig(
+            displayName = AppTheme.DYNAMIC.displayName,
+            background = dynamicColor.background,
+            cardBackground = dynamicColor.surface,
+            primary = dynamicColor.primary,
+            outlineColor = dynamicColor.outline,
+            textColor = dynamicColor.onBackground,
+            secondaryTextColor = dynamicColor.onSurfaceVariant,
+            isDark = isSystemDark
+        )
+    } else {
+        ThemeConfig(
+            displayName = baseTheme.displayName,
+            background = baseTheme.background,
+            cardBackground = baseTheme.cardBackground,
+            primary = baseTheme.primary,
+            outlineColor = baseTheme.outlineColor,
+            textColor = baseTheme.textColor,
+            secondaryTextColor = baseTheme.secondaryTextColor,
+            isDark = baseTheme.isDark
+        )
     }
 
     var showSettings by remember { mutableStateOf(false) }
@@ -492,7 +528,7 @@ fun ExpenseScreen(
 fun AddTransactionDialog(
     onDismiss: () -> Unit,
     onSave: (String, Double, String, String, String, String?) -> Unit,
-    appTheme: AppTheme,
+    appTheme: ThemeConfig,
     dynamicCategories: List<CategoryData>
 ) {
     var description by remember { mutableStateOf("") }
@@ -654,7 +690,7 @@ fun AddTransactionDialog(
 @Composable
 fun SettingsScreen(
     viewModel: ExpenseViewModel,
-    appTheme: AppTheme,
+    appTheme: ThemeConfig,
     dynamicCategories: List<CategoryData>,
     onBack: () -> Unit
 ) {
@@ -683,6 +719,8 @@ fun SettingsScreen(
 
     val isSettingsCloudSyncEnabled by viewModel.isCloudSyncEnabled.collectAsState()
     val settingsLastSyncTime by viewModel.lastSyncTime.collectAsState()
+    val isBiometricEnabled by viewModel.isBiometricEnabled.collectAsState()
+    val selectedThemeKey by viewModel.selectedTheme.collectAsState()
 
     Scaffold(
         topBar = {
@@ -725,7 +763,7 @@ fun SettingsScreen(
 
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         AppTheme.values().forEach { theme ->
-                            val isSelected = theme.name == appTheme.name
+                            val isSelected = theme.name == selectedThemeKey
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -982,6 +1020,27 @@ fun SettingsScreen(
                         Switch(
                             checked = isSettingsCloudSyncEnabled,
                             onCheckedChange = { viewModel.toggleCloudSync(it) },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = appTheme.primary,
+                                uncheckedThumbColor = appTheme.secondaryTextColor,
+                                uncheckedTrackColor = appTheme.background
+                            )
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text("Biometrikus azonosítás", fontWeight = FontWeight.SemiBold, color = appTheme.textColor)
+                            Text("Védelem az alkalmazás indításakor", color = appTheme.secondaryTextColor, fontSize = 12.sp)
+                        }
+                        Switch(
+                            checked = isBiometricEnabled,
+                            onCheckedChange = { viewModel.toggleBiometric(it) },
                             colors = SwitchDefaults.colors(
                                 checkedThumbColor = Color.White,
                                 checkedTrackColor = appTheme.primary,

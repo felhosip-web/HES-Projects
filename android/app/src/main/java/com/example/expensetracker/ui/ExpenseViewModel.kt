@@ -41,9 +41,17 @@ class ExpenseViewModel @Inject constructor(
     private val sharedPrefs = context.getSharedPreferences("expense_tracker_prefs", Context.MODE_PRIVATE)
     private val gson = Gson()
 
-    // Themes options keys: "SLATE_DARK", "LIGHT_THEME", "EMERALD_DARK", "OCEAN_DARK"
+    // Themes options keys: "SLATE_DARK", "LIGHT_THEME", "EMERALD_DARK", "OCEAN_DARK", "DYNAMIC"
     private val _selectedTheme = MutableStateFlow(sharedPrefs.getString("selected_theme", "SLATE_DARK") ?: "SLATE_DARK")
     val selectedTheme: StateFlow<String> = _selectedTheme.asStateFlow()
+
+    private val _isBiometricEnabled = MutableStateFlow(sharedPrefs.getBoolean("biometric_enabled", false))
+    val isBiometricEnabled: StateFlow<Boolean> = _isBiometricEnabled.asStateFlow()
+
+    fun toggleBiometric(enabled: Boolean) {
+        _isBiometricEnabled.value = enabled
+        sharedPrefs.edit().putBoolean("biometric_enabled", enabled).apply()
+    }
 
     private val defaultCategories = listOf(
         CategoryData("Étkezés", "#F43F5E", 150000.0, "expense"),
